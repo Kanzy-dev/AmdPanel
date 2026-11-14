@@ -103,9 +103,9 @@ jobs:
         run: |
           $stage = "dist\AmdPanel-v${{ steps.rel.outputs.version }}-win-x64"
           New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          $appOut = "src\AmdPanel.App\bin\$env:CONFIGURATION\net8.0-windows10.0.19041.0"
+          $appOut = "src\AmdPanel.App\bin\$env:PLATFORM\$env:CONFIGURATION\net8.0-windows10.0.19041.0"
           if (-not (Test-Path "$appOut\AmdPanel.exe")) {
-            $appOut = "src\AmdPanel.App\bin\$env:CONFIGURATION\net8.0-windows"
+          $appOut = "src\AmdPanel.App\bin\$env:PLATFORM\$env:CONFIGURATION\net8.0-windows"
           }
           Copy-Item "$appOut\*" -Destination $stage -Recurse -Force
           # Ensure NativeBridge.dll
