@@ -1,8 +1,10 @@
-# AmdPanel — Классическая панель управления для AMD
+# AmdPanel — Classic Control Panel for AMD GPUs
 
-**AmdPanel** — это легкая и быстрая панель управления видеокартами AMD с открытым исходным кодом, вдохновленная классической **NVIDIA Control Panel**.
+[English](README.md) | [Русский](README.ru.md)
 
-Проект создан для тех, кто хочет ставить чистый видеодрайвер (**Driver Only**) без тяжелого комбайна *AMD Software: Adrenalin Edition*, браузерных движков и фоновой телеметрии, но при этом сохранить удобный и мгновенный доступ ко всем настройкам графики, монитора и видеокарты.
+**AmdPanel** is a lightweight, fast, open-source control panel for AMD graphics cards, inspired by the classic **NVIDIA Control Panel**.
+
+Built for users who prefer installing clean **Driver-Only** packages without the bloated *AMD Software: Adrenalin Edition*, embedded web engines, or background telemetry—while keeping instant, native access to all 3D, display, color, and tuning settings.
 
 [![Release](https://shields.io)](https://github.com)
 [![License: GPL v3](https://shields.io)](LICENSE)
@@ -11,63 +13,63 @@
 
 ---
 
-## Возможности
+## Features
 
-* **Классический интерфейс (NVIDIA Control Panel UX):** Знакомая двухпанельная структура с деревом разделов слева и таблицей настроек справа. Мгновенный запуск, минимальное потребление оперативной памяти (< 30 МБ) и никаких лишних фоновых процессов.
-* **Умная адаптация под железо:** Программа сама определяет возможности вашей видеокарты и монитора — неподдерживаемые функции автоматически скрываются, а при выборе разрешения и герцовки учитывается пропускная способность вашего кабеля (HDMI / DisplayPort) для защиты от черных экранов.
-* **Управление параметрами 3D и профили игр:** Настройка *Radeon Anti-Lag*, *Radeon Chill*, *Image Sharpening*, вертикальной синхронизации и фильтрации текстур. Поддержка индивидуальных профилей для конкретных игр (`.exe`) с автоматическим возвратом настроек при выходе из игры.
-* **Настройки дисплея и цвета:** Выбор разрешения, частоты обновления, глубины цвета (8/10 бит), формата пикселей (RGB / YCbCr), управление *AMD FreeSync*, масштабированием и насыщенностью цветов (аналог *Digital Vibrance*). Безопасный таймер автоотката (15 секунд) при смене параметров экрана.
-* **Встроенный менеджер драйверов (Driver Only):** Скачивание и чистая установка официальных драйверов AMD напрямую без оболочки Adrenalin, а также функция полной очистки старого драйвера (*Clean Install*) с автоматическим резервным копированием ваших настроек.
-* **Мультиязычность и Multi-GPU:** Поддержка русского и английского языков, а также удобное переключение между видеокартами (актуально для ноутбуков и систем со встроенной + дискретной графикой).
-
----
-
-## Скачивание и запуск
-
-1. Перейдите в раздел [**Releases → v1.0.0**](https://github.com).
-2. Скачайте архив **`AmdPanel-v1.0.0-win-x64.zip`**.
-3. Распакуйте его в любую удобную папку и запустите **`AmdPanel.exe`**.
-
-**Системные требования:**
-* Windows 10 (1903 и новее) или Windows 11 (x64).
-* Установленный видеодрайвер AMD (достаточно варианта *Driver Only*).
+* **Classic Interface (NVIDIA Control Panel UX):** Familiar two-pane layout with a navigation tree on the left and a dense parameter table on the right. Instant startup, low memory footprint (< 30 MB RAM), and zero persistent background bloat.
+* **Smart Hardware Adaptation:** Automatically detects your GPU and monitor capabilities—unsupported features are hidden, and resolution/refresh rate combinations are checked against your cable bandwidth (HDMI / DisplayPort) to prevent black screens.
+* **3D Settings & Per-Game Profiles:** Configure *Radeon Anti-Lag*, *Radeon Chill*, *Image Sharpening*, V-Sync, and texture filtering. Supports per-application profiles (`.exe`) with automatic setting restoration when closing a game.
+* **Display & Color Management:** Adjust resolution, refresh rate, color depth (8/10 bpc), pixel format (RGB / YCbCr), *AMD FreeSync*, scaling modes, and digital saturation (*Digital Vibrance* equivalent). Includes a 15-second safety rollback timer on display changes.
+* **Built-in Driver Manager (Driver-Only):** Download and clean-install official AMD drivers without Adrenalin, including a *Clean Install* option that backs up your profiles automatically.
+* **Multi-Language & Multi-GPU Support:** Built-in English and Russian UI localization, plus an active GPU selector for laptops and hybrid graphics setups.
 
 ---
 
-## Поддерживаемые видеокарты
+## Download & Run
 
-| Архитектура | Серия видеокарт | Статус поддержки |
+1. Go to [**Releases**](https://github.com).
+2. Download **`AmdPanel-v1.0.1-win-x64.zip`**.
+3. Extract the archive to any folder and run **`AmdPanel.exe`**.
+
+**System Requirements:**
+* Windows 10 (1903 or newer) or Windows 11 (x64).
+* Installed AMD graphics driver (*Driver-Only* installation is sufficient).
+
+---
+
+## Supported GPUs
+
+| Architecture | Radeon Series | Support Status |
 | :--- | :--- | :--- |
-| **Polaris** (GCN 4) | Radeon RX 400 / RX 500 | Полная поддержка |
-| **Vega** (GCN 5) | Radeon RX Vega 56 / 64, Radeon VII | Полная поддержка |
-| **RDNA 1** | Radeon RX 5000 | Полная поддержка |
-| **RDNA 2** | Radeon RX 6000 | Полная поддержка |
-| **RDNA 3** | Radeon RX 7000 | Полная поддержка |
-| **RDNA 4** | Radeon RX 8000 | Полная поддержка |
+| **Polaris** (GCN 4) | Radeon RX 400 / RX 500 | Full support (partially tested) |
+| **Vega** (GCN 5) | Radeon RX Vega 56 / 64, Radeon VII | Full support (not tested yet) |
+| **RDNA 1** | Radeon RX 5000 | Full support (not tested yet) |
+| **RDNA 2** | Radeon RX 6000 | Full support (not tested yet) |
+| **RDNA 3** | Radeon RX 7000 | Full support (not tested yet) |
+| **RDNA 4** | Radeon RX 8000 | Full support (not tested yet) |
+
+> *Looking for testers with RX 5000 / 6000 / 7000 / 8000 cards! Feel free to open an [Issue](https://github.com) with feedback.*
 
 ---
 
-## Сборка из исходников (для разработчиков)
+## Building from Source
 
-Если вы хотите собрать проект самостоятельно из исходного кода:
+**Prerequisites:**
+* Visual Studio 2022 (17.8+) or Build Tools with **Desktop development with C++** and **.NET 8 SDK**.
 
-**Требования:**
-* Visual Studio 2022 (17.8+) или Build Tools с компонентами **Desktop development with C++** и **.NET 8 SDK**.
-
-**Сборка в один клик:**
+**One-click build:**
 ```cmd
 git clone https://github.com
 cd AmdPanel
 build.bat
 ```
-Готовый билд и архив появятся в папке `dist/`.
+The compiled binaries and release archive will be placed in `dist/`.
 
 ---
 
-## Лицензия и благодарности
+## License & Acknowledgments
 
-Исходный код **AmdPanel** распространяется под лицензией **GNU General Public License v3.0 (GPL-3.0)** — подробности в файле [LICENSE](LICENSE). При использовании или модификации кода необходимо сохранять указание авторства и ссылку на оригинальный репозиторий.
+**AmdPanel** is licensed under the **GNU General Public License v3.0 (GPL-3.0)** — see [LICENSE](LICENSE) for details. Attribution and a link to the original repository are required when redistributing or modifying the code.
 
-В проекте используются сторонние компоненты:
-* **AMD ADLX SDK** — официальная библиотека AMD (распространяется по лицензии AMD ADLX SDK).
-* **SharpCompress** и **CommunityToolkit.Mvvm** — открытые библиотеки под лицензией MIT.
+Third-party components used in this project:
+* **AMD ADLX SDK** — Official AMD Device Library eXtension (licensed under AMD ADLX SDK terms).
+* **SharpCompress** & **CommunityToolkit.Mvvm** — Open-source libraries licensed under MIT.
