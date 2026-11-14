@@ -467,20 +467,36 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCapabilities(int32_t 
             if (ADLX_OK == morphAA->IsEnabled(&b))   outCaps->morphologicalAntiAliasingEnabled   = b ? 1 : 0;
         }
 
-        // AnisotropicFiltering - IsSupported + IsEnabled (значениеlevel берём из GetValue если есть)
+        // AnisotropicFiltering - IsSupported.
+        // ВАЖНО: IADLX3DAnisotropicFiltering НЕ имеет метода IsEnabled() -
+        // подтверждено сверкой с I3DSettings.h (строка 1848). Доступные методы:
+        //   IsSupported(adlx_bool*), GetLevel(ADLX_ANISOTROPIC_FILTERING_LEVEL*),
+        //   SetEnabled(adlx_bool), SetLevel(ADLX_ANISOTROPIC_FILTERING_LEVEL).
+        // GetLevel возвращает enum LEVEL (OFF/2X/4X/8X/16X) - мы могли бы
+        // использовать его для заполнения *Enabled, но это требует маппинга
+        // enum → bool. Для простоты оставляем anisotropicFilteringEnabled = 0
+        // (UI не показывает этот тумблер как активный при инициализации;
+        // пользователь сам включит через SetEnabled если нужно).
         IADLX3DAnisotropicFilteringPtr aniso;
         if (ADLX_OK == d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) && aniso)
         {
             if (ADLX_OK == aniso->IsSupported(&b)) outCaps->anisotropicFilteringSupported = b ? 1 : 0;
-            if (ADLX_OK == aniso->IsEnabled(&b))   outCaps->anisotropicFilteringEnabled   = b ? 1 : 0;
+            // anisotropicFilteringEnabled остаётся 0 (нет IsEnabled на этом интерфейсе)
         }
 
-        // Tessellation - IsSupported + IsEnabled
+        // Tessellation - IsSupported.
+        // ВАЖНО: IADLX3DTessellation НЕ имеет метода IsEnabled() -
+        // подтверждено сверкой с I3DSettings.h (строка 1991). Доступные методы:
+        //   IsSupported(adlx_bool*), GetMode(ADLX_TESSELLATION_MODE*),
+        //   GetLevel(ADLX_TESSELLATION_LEVEL*), SetMode, SetLevel.
+        // Аналогично AnisotropicFiltering: tessellationEnabled остаётся 0
+        // при инициализации (читать через GetMode/GetLevel + маппинг enum
+        // можно в отдельной итерации патча).
         IADLX3DTessellationPtr tess;
         if (ADLX_OK == d3dSvc->GetTessellation(gpu.GetPtr(), &tess) && tess)
         {
             if (ADLX_OK == tess->IsSupported(&b)) outCaps->tessellationSupported = b ? 1 : 0;
-            if (ADLX_OK == tess->IsEnabled(&b))   outCaps->tessellationEnabled   = b ? 1 : 0;
+            // tessellationEnabled остаётся 0 (нет IsEnabled на этом интерфейсе)
         }
     }
 
@@ -840,24 +856,44 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayInfo(int32_t disp
     //--- v1.0.1: Custom Color (Brightness / Contrast / Saturation / Hue) ---
     // Читаем текущие значения из AMD Adrenalin, чтобы DisplayColorPageViewModel
     // при инициализации показывала реальные значения, а не дефолтные 50/50/100/50.
+    //
+    // ВАЖНО: IADLXDisplayCustomColor НЕ имеет общего метода IsSupported() -
+    // подтверждено сверкой с IDisplaySettings.h (строка 1155). Вместо этого
+    // интерфейс имеет отдельные Is*Supported методы для каждого параметра:
+    //   IsBrightnessSupported(adlx_bool*), IsContrastSupported(adlx_bool*),
+    //   IsSaturationSupported(adlx_bool*), IsHueSupported(adlx_bool*),
+    //   IsTemperatureSupported(adlx_bool*).
+    // Мы считаем CustomColorSupported=true если поддержан хотя бы Brightness
+    // (это базовый параметр, доступный на всех AMD GPU с CustomColor).
     IADLXDisplayCustomColorPtr customColor;
     if (ADLX_OK == dispSvc->GetCustomColor(disp.GetPtr(), &customColor) && customColor)
     {
-        adlx_bool sup = false;
-        if (ADLX_OK == customColor->IsSupported(&sup))
-            outInfo->customColorSupported = sup ? 1 : 0;
-
-        if (sup)
+        adlx_bool bBrightSup = false, bContrastSup = false, bSatSup = false, bHueSup = false;
+        if (ADLX_OK == customColor->IsBrightnessSupported(&bBrightSup) && bBrightSup)
         {
+            // CustomColorSupported = true если хотя бы Brightness поддержан
+            outInfo->customColorSupported = 1;
+
             adlx_int v = 0;
             if (ADLX_OK == customColor->GetBrightness(&v))
                 outInfo->customColorBrightness = (int32_t)v;
-            if (ADLX_OK == customColor->GetContrast(&v))
-                outInfo->customColorContrast = (int32_t)v;
-            if (ADLX_OK == customColor->GetSaturation(&v))
-                outInfo->customColorSaturation = (int32_t)v;
-            if (ADLX_OK == customColor->GetHue(&v))
-                outInfo->customColorHue = (int32_t)v;
+
+            // Contrast / Saturation / Hue - читаем только если поддержаны
+            if (ADLX_OK == customColor->IsContrastSupported(&bContrastSup) && bContrastSup)
+            {
+                if (ADLX_OK == customColor->GetContrast(&v))
+                    outInfo->customColorContrast = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsSaturationSupported(&bSatSup) && bSatSup)
+            {
+                if (ADLX_OK == customColor->GetSaturation(&v))
+                    outInfo->customColorSaturation = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsHueSupported(&bHueSup) && bHueSup)
+            {
+                if (ADLX_OK == customColor->GetHue(&v))
+                    outInfo->customColorHue = (int32_t)v;
+            }
         }
     }
 
