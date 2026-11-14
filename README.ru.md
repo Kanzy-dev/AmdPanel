@@ -58,7 +58,7 @@
 
 **Сборка в один клик:**
 ```cmd
-git clone https://github.com
+git clone https://github.com/Kanzy-dev/AmdPanel.git
 cd AmdPanel
 build.bat
 ```
