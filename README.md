@@ -7,7 +7,7 @@
 [English](README.md) • [Русский](README.ru.md)
 
 [![Status](https://shields.io)](#)
-[![Release](https://shields.io)](https://github.com)
+[![Release](https://shields.io)](https://github.com/Kanzy-dev/AmdPanel/releases)
 [![License](https://shields.io)](LICENSE)
 [![Platform](https://shields.io)](#)
 [![.NET](https://shields.io)](#)
@@ -61,7 +61,7 @@
 
 ## 🚀 Download & Quick Start
 
-1. Open the [**Releases**](https://github.com) page.
+1. Open the [**Releases**](https://github.com/Kanzy-dev/AmdPanel/releases) page.
 2. Download **`AmdPanel-v1.0.1-win-x64.zip`**.
 3. Extract the archive to any folder and launch **`AmdPanel.exe`**.
 
