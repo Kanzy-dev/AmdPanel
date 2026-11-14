@@ -22,13 +22,13 @@ public sealed class HardwareSnapshot
     public Dictionary<int, (GpuCapabilities Caps, GpuTuningRanges Ranges)> GpuDetails { get; init; } = new();
 
     /// <summary> Путь в реестре к ветке активного AMD Display adapter (найден через SetupApi). </summary>
-    public string? AmdDriverRegistryPath { get; init; }
+    public string? AmdDriverRegistryPath { get; set; }
 
     /// <summary> Версия установленного драйвера из реестра (UMD / Catalyst). </summary>
-    public string? InstalledDriverVersion { get; init; }
+    public string? InstalledDriverVersion { get; set; }
 
     /// <summary> Истинный статус: true, если в системе нет Adrenalin (только driver-only). </summary>
-    public bool IsDriverOnlyInstallation { get; init; }
+    public bool IsDriverOnlyInstallation { get; set; }
 }
 
 /// <summary>

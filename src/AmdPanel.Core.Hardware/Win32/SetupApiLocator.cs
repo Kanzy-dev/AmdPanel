@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using System.Text;
 
 namespace AmdPanel.Core.Hardware.Win32;
 
