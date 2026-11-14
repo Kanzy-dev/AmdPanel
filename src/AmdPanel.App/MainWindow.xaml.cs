@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using AmdPanel.App.Services;
 using AmdPanel.App.ViewModels;
+using AmdPanel.Core.Hardware;
 
 namespace AmdPanel.App;
 

@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AmdPanel.Core.Profiles.Exceptions;
 using AmdPanel.Core.Profiles.Models;
 

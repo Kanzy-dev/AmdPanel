@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AmdPanel.Core.Hardware;
 using AmdPanel.Core.Profiles.Exceptions;
 using AmdPanel.Core.Profiles.Services;

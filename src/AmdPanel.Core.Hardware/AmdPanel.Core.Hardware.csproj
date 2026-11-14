@@ -27,9 +27,12 @@
   </ItemGroup>
 
   <!-- InternalsVisibleTo: AmdPanel.Core.Profiles использует internal Win32.User32Display
-       для gamma ramp (SetDeviceGammaRamp) и констант при применении профиля. -->
+       для gamma ramp (SetDeviceGammaRamp) и констант при применении профиля.
+       AmdPanel.Core.DriverManager может использовать internal Win32.PnpUtil / SetupApiLocator
+       для операций с oem*.inf и поиска ветки реестра драйвера. -->
   <ItemGroup>
     <InternalsVisibleTo Include="AmdPanel.Core.Profiles" />
+    <InternalsVisibleTo Include="AmdPanel.Core.DriverManager" />
   </ItemGroup>
 
   <!-- Копируем нативную сборку моста рядом с управляемой -->

@@ -1,9 +1,7 @@
-using System.Windows.Threading;
-using AmdPanel.Core.Hardware;
 using AmdPanel.Core.Hardware.Capability;
 using AmdPanel.Core.Hardware.Exceptions;
 
-namespace AmdPanel.App.Services;
+namespace AmdPanel.Core.Hardware;
 
 /// <summary>
 /// UI-ориентированная обёртка над HardwareScanner / DisplayModeManager.
@@ -11,8 +9,14 @@ namespace AmdPanel.App.Services;
 /// <remarks>
 /// Хранит <see cref="HardwareSnapshot"/> после первого сканирования и
 /// переиспользует его для всех VM. Пересканирование выполняется явно через
-/// RescanAsync() или автоматически при изменении выбранного GPU.
+/// ScanAsync() или автоматически при изменении выбранного GPU.
 /// </remarks>
+/// <para>
+/// <b>Расположение</b>: ранее этот класс жил в <c>AmdPanel.App.Services</c>,
+/// но перенесён в <c>AmdPanel.Core.Hardware</c>, чтобы его могли использовать
+/// <c>AmdPanel.Core.Profiles</c> и <c>AmdPanel.Core.DriverManager</c> без
+/// циклической зависимости на WPF-сборку <c>AmdPanel.App</c>.
+/// </para>
 public sealed class UiHardwareHub
 {
     private readonly AdlxContext _ctx;
@@ -47,7 +51,7 @@ public sealed class UiHardwareHub
 
     /// <summary> Список GPU, отфильтрованный по VEN_1002 (только AMD). </summary>
     public IReadOnlyList<GpuInfo> GetAmdGpus()
-        => (Snapshot.Gpus.Where(g => g.PciVendorId == 0x1002).ToList());
+        => Snapshot.Gpus.Where(g => g.PciVendorId == 0x1002).ToList();
 
     /// <summary>
     /// Список дисплеев, доступных для выбранного GPU. ADLX не предоставляет
