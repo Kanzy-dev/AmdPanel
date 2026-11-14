@@ -50,24 +50,26 @@
 //     IsSupportedManualFanTuning(IADLXGPU*, adlx_bool*)
 //     IsSupportedManualPowerTuning(IADLXGPU*, adlx_bool*)
 //     GetManualGFXTuning(IADLXGPU*, IADLXInterface**) → QueryInterface для
-//       IADLXGPUManualGFXTuning
-//     GetManualVRAMTuning(IADLXGPU*, IADLXInterface**)
-//     GetManualFanTuning(IADLXGPU*, IADLXInterface**)
-//     GetManualPowerTuning(IADLXGPU*, IADLXInterface**)
+//       IADLXManualGraphicsTuning1 (Polaris/Vega/RDNA - universal)
+//     GetManualVRAMTuning(IADLXGPU*, IADLXInterface**) → IADLXManualVRAMTuning1
+//     GetManualFanTuning(IADLXGPU*, IADLXInterface**) → IADLXManualFanTuning
+//     GetManualPowerTuning(IADLXGPU*, IADLXInterface**) → IADLXManualPowerTuning
 //
-//   IADLXGPUManualGFXTuning:
+//   IADLXManualGraphicsTuning1 (v1, все AMD GPU):
 //     GetGPUTuningRanges(ADLX_IntRange* freqRange, ADLX_IntRange* voltRange)
 //     GetGPUMinFrequencyRange(ADLX_IntRange*), GetGPUMaxFrequencyRange(ADLX_IntRange*)
 //     GetGPUVoltageRange(ADLX_IntRange*)
+//   На RDNA дополнительно доступен IADLXManualGraphicsTuning2 - имеет
+//   отдельные методы вместо GetGPUTuningRanges, но v1 работает везде.
 //
-//   IADLXGPUManualVRAMTuning:
+//   IADLXManualVRAMTuning1 (v1):
 //     GetMaxVRAMFrequencyRange(ADLX_IntRange*)
 //
-//   IADLXGPUManualFanTuning:
+//   IADLXManualFanTuning (base, все AMD GPU):
 //     GetFanTuningRanges(ADLX_IntRange* speedRange, ADLX_IntRange* tempRange)
 //     GetMinAcousticLimitRange(ADLX_IntRange*)
 //
-//   IADLXGPUManualPowerTuning:
+//   IADLXManualPowerTuning (base, все AMD GPU):
 //     GetPowerLimitRange(ADLX_IntRange*)
 //
 //   IADLXDisplayServices:
@@ -109,10 +111,10 @@
 #include "IDisplaySettings.h"         // IADLXDisplayScalingMode / ColorDepth / PixelFormat / FreeSync / GPUScaling
 #include "IDisplays.h"                // IADLXDisplayServices, IADLXDisplayList, IADLXDisplay
 #include "IGPUTuning.h"               // IADLXGPUTuningServices
-#include "IGPUManualGFXTuning.h"      // IADLXGPUManualGFXTuning
-#include "IGPUManualVRAMTuning.h"
-#include "IGPUManualFanTuning.h"
-#include "IGPUManualPowerTuning.h"
+#include "IGPUManualGFXTuning.h"      // IADLXManualGraphicsTuning1 / 2
+#include "IGPUManualVRAMTuning.h"     // IADLXManualVRAMTuning1 / 2
+#include "IGPUManualFanTuning.h"      // IADLXManualFanTuning (base) / 1
+#include "IGPUManualPowerTuning.h"    // IADLXManualPowerTuning (base) / 1
 #include "IPerformanceMonitoring.h"
 #include "ISystem2.h"                 // IADLXGPU2: DriverVersion()
 
@@ -172,6 +174,35 @@ namespace
 
         gpu2->Release();
         return ok;
+    }
+
+    //---------------------------------------------------------------------
+    // Helper: запрашивает у raw IADLXInterface конкретный Manual*Tuning
+    // extension через QueryInterface.
+    //
+    // ADLX SDK имеет РАЗНЫЕ имена интерфейсов в зависимости от поколения GPU:
+    //   - Polaris/Vega (GCN):  IADLXManualGraphicsTuning1, IADLXManualVRAMTuning1
+    //   - RDNA 1/2/3/4:        IADLXManualGraphicsTuning2 (+ 2_1 extension),
+    //                         IADLXManualVRAMTuning2 (+ 2_1 extension)
+    //   - FanTuning:           IADLXManualFanTuning (base) + IADLXManualFanTuning1
+    //   - PowerTuning:         IADLXManualPowerTuning (base) + IADLXManualPowerTuning1
+    //
+    // v1-интерфейсы (IADLXManualGraphicsTuning1, IADLXManualVRAMTuning1) и
+    // base-интерфейсы (IADLXManualFanTuning, IADLXManualPowerTuning) доступны
+    // на ВСЕХ AMD GPU с ADLX — включая RDNA, т.к. v2 является расширением v1,
+    // а не заменой. Поэтому используем v1/base как универсальный путь,
+    // avoiding генерации v2-специфичного кода (у v2 другой набор методов).
+    //
+    // Возвращает сырой указатель (caller обязан вызвать Release()).
+    //---------------------------------------------------------------------
+    template <typename T>
+    T* QueryManualTuning(IADLXInterface* raw, const wchar_t* iid)
+    {
+        if (!raw) return nullptr;
+        T* p = nullptr;
+        if (ADLX_OK == raw->QueryInterface(iid, reinterpret_cast<void**>(&p)) && p)
+            return p;
+        return nullptr;
     }
 
     //---------------------------------------------------------------------
@@ -489,14 +520,19 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t 
     if (ADLX_OK != sys->GetGPUTuningServices(&tuningSvc) || !tuningSvc) return BRIDGE_OK; // OK, просто ranges = -1
 
     //--- Manual GFX tuning ---
+    // IADLXManualGraphicsTuning1 доступен на ВСЕХ AMD GPU с ADLX (Polaris, Vega,
+    // RDNA 1/2/3/4). RDNA имеет дополнительно IADLXManualGraphicsTuning2, но v1
+    // тоже работает через обратную совместимость. У v1 есть метод
+    // GetGPUTuningRanges(freqRange, voltRange) - возвращает ОБА диапазона сразу.
     adlx_bool supported = false;
     if (ADLX_OK == tuningSvc->IsSupportedManualGFXTuning(gpu.GetPtr(), &supported) && supported)
     {
         IADLXInterfacePtr rawIface;
         if (ADLX_OK == tuningSvc->GetManualGFXTuning(gpu.GetPtr(), &rawIface) && rawIface)
         {
-            IADLXGPUManualGFXTuning* gfxTuning = nullptr;
-            if (ADLX_OK == rawIface->QueryInterface(L"IADLXGPUManualGFXTuning", reinterpret_cast<void**>(&gfxTuning)) && gfxTuning)
+            IADLXManualGraphicsTuning1* gfxTuning =
+                QueryManualTuning<IADLXManualGraphicsTuning1>(rawIface.GetPtr(), L"IADLXManualGraphicsTuning1");
+            if (gfxTuning)
             {
                 ADLX_IntRange freqRange = {0,0,0};
                 ADLX_IntRange voltRange = {0,0,0};
@@ -515,14 +551,20 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t 
     }
 
     //--- Manual VRAM tuning ---
+    // IADLXManualVRAMTuning1 - базовый интерфейс для всех AMD GPU. Содержит
+    // GetMaxVRAMFrequencyRange(ADLX_IntRange*) для получения диапазона частот
+    // видеопамяти. На RDNA дополнительно есть IADLXManualVRAMTuning2 с
+    // поддержкой memory timing description list, но для слайдеров частоты VRAM
+    // достаточно v1.
     supported = false;
     if (ADLX_OK == tuningSvc->IsSupportedManualVRAMTuning(gpu.GetPtr(), &supported) && supported)
     {
         IADLXInterfacePtr rawIface;
         if (ADLX_OK == tuningSvc->GetManualVRAMTuning(gpu.GetPtr(), &rawIface) && rawIface)
         {
-            IADLXGPUManualVRAMTuning* vramTuning = nullptr;
-            if (ADLX_OK == rawIface->QueryInterface(L"IADLXGPUManualVRAMTuning", reinterpret_cast<void**>(&vramTuning)) && vramTuning)
+            IADLXManualVRAMTuning1* vramTuning =
+                QueryManualTuning<IADLXManualVRAMTuning1>(rawIface.GetPtr(), L"IADLXManualVRAMTuning1");
+            if (vramTuning)
             {
                 ADLX_IntRange r = {0,0,0};
                 if (ADLX_OK == vramTuning->GetMaxVRAMFrequencyRange(&r))
@@ -537,14 +579,20 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t 
     }
 
     //--- Manual Fan tuning ---
+    // IADLXManualFanTuning (base) - доступен на всех AMD GPU. Имеет
+    // GetFanTuningRanges(speedRange, temperatureRange) и
+    // GetMinAcousticLimitRange(ADLX_IntRange*). Расширение IADLXManualFanTuning1
+    // добавляет ZeroRPM и MinFanSpeed - но для базовых слайдеров Fan RPM
+    // достаточно base interface.
     supported = false;
     if (ADLX_OK == tuningSvc->IsSupportedManualFanTuning(gpu.GetPtr(), &supported) && supported)
     {
         IADLXInterfacePtr rawIface;
         if (ADLX_OK == tuningSvc->GetManualFanTuning(gpu.GetPtr(), &rawIface) && rawIface)
         {
-            IADLXGPUManualFanTuning* fanTuning = nullptr;
-            if (ADLX_OK == rawIface->QueryInterface(L"IADLXGPUManualFanTuning", reinterpret_cast<void**>(&fanTuning)) && fanTuning)
+            IADLXManualFanTuning* fanTuning =
+                QueryManualTuning<IADLXManualFanTuning>(rawIface.GetPtr(), L"IADLXManualFanTuning");
+            if (fanTuning)
             {
                 ADLX_IntRange speedRange = {0,0,0};
                 ADLX_IntRange tempRange = {0,0,0};
@@ -567,14 +615,19 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t 
     }
 
     //--- Manual Power tuning ---
+    // IADLXManualPowerTuning (base) - доступен на всех AMD GPU. Имеет
+    // GetPowerLimitRange(ADLX_IntRange*) для диапазона TDP в процентах.
+    // Расширение IADLXManualPowerTuning1 добавляет TDCLimit, но для слайдера
+    // Power Limit достаточно base interface.
     supported = false;
     if (ADLX_OK == tuningSvc->IsSupportedManualPowerTuning(gpu.GetPtr(), &supported) && supported)
     {
         IADLXInterfacePtr rawIface;
         if (ADLX_OK == tuningSvc->GetManualPowerTuning(gpu.GetPtr(), &rawIface) && rawIface)
         {
-            IADLXGPUManualPowerTuning* powerTuning = nullptr;
-            if (ADLX_OK == rawIface->QueryInterface(L"IADLXGPUManualPowerTuning", reinterpret_cast<void**>(&powerTuning)) && powerTuning)
+            IADLXManualPowerTuning* powerTuning =
+                QueryManualTuning<IADLXManualPowerTuning>(rawIface.GetPtr(), L"IADLXManualPowerTuning");
+            if (powerTuning)
             {
                 ADLX_IntRange r = {0,0,0};
                 if (ADLX_OK == powerTuning->GetPowerLimitRange(&r))
