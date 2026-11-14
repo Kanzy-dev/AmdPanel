@@ -23,6 +23,7 @@
     <Product>AmdPanel</Product>
     <Copyright>Copyright (c) 2026 AmdPanel contributors</Copyright>
     <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
   </PropertyGroup>
 
   <ItemGroup>
