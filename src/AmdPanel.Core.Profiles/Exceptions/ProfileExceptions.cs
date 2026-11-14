@@ -21,4 +21,5 @@ public sealed class ProfileCorruptedException : ProfileException
 public sealed class ProfileRegistryApplyException : ProfileException
 {
     public ProfileRegistryApplyException(string message) : base(message) { }
+    public ProfileRegistryApplyException(string message, Exception innerException) : base(message, innerException) { }
 }

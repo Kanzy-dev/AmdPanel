@@ -86,7 +86,7 @@ public sealed class JsonProfileRepository : IProfileRepository
         {
             // File.Replace(source, dest, backup) - атомарная операция NTFS
             // Сохраняет текущий finalPath как .bak, переименовывает .tmp → finalPath
-            File.Replace(tmpPath, finalPath, bakPath, checkPath: false);
+            File.Replace(tmpPath, finalPath, bakPath, ignoreMetadataErrors: false);
         }
         else
         {

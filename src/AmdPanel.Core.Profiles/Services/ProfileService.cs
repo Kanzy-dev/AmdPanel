@@ -4,6 +4,7 @@ using AmdPanel.Core.Hardware.Win32;
 using AmdPanel.Core.Profiles.Exceptions;
 using AmdPanel.Core.Profiles.Models;
 using AmdPanel.Core.Profiles.Storage;
+using AmdPanel.Core.Hardware.Exceptions;
 
 namespace AmdPanel.Core.Profiles.Services;
 

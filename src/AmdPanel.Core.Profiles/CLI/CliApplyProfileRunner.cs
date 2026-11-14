@@ -3,6 +3,7 @@ using AmdPanel.Core.Hardware;
 using AmdPanel.Core.Profiles.Exceptions;
 using AmdPanel.Core.Profiles.Services;
 using AmdPanel.Core.Profiles.Storage;
+using AmdPanel.Core.Profiles.Models;
 
 namespace AmdPanel.Core.Profiles.CLI;
 
