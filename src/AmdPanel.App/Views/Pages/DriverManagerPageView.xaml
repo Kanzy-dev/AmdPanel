@@ -63,7 +63,7 @@
         <DockPanel Margin="0,4">
           <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
                      Width="220" Text="{DynamicResource drv.installMode}"/>
-          <TextBlock Style="{StaticResource Form.ValueLabel}">
+          <TextBlock>
             <TextBlock.Style>
               <Style TargetType="TextBlock" BasedOn="{StaticResource Form.ValueLabel}">
                 <Setter Property="Foreground" Value="{StaticResource Brush.Accent}"/>
