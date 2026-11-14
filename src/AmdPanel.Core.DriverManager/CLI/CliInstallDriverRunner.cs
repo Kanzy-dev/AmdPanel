@@ -1,5 +1,6 @@
 using AmdPanel.Core.DriverManager.Services;
 using AmdPanel.Core.Hardware;
+using AmdPanel.Core.DriverManager.Models;
 
 namespace AmdPanel.Core.DriverManager.CLI;
 
