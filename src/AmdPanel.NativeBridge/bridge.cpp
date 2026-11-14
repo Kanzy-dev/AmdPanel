@@ -551,29 +551,52 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t 
     }
 
     //--- Manual VRAM tuning ---
-    // IADLXManualVRAMTuning1 - базовый интерфейс для всех AMD GPU. Содержит
-    // GetMaxVRAMFrequencyRange(ADLX_IntRange*) для получения диапазона частот
-    // видеопамяти. На RDNA дополнительно есть IADLXManualVRAMTuning2 с
-    // поддержкой memory timing description list, но для слайдеров частоты VRAM
-    // достаточно v1.
+    // ВАЖНО: у разных поколений AMD GPU РАЗНЫЕ имена интерфейсов и методов:
+    //   - IADLXManualVRAMTuning2 (RDNA 1/2/3/4):
+    //       GetMaxVRAMFrequencyRange(ADLX_IntRange* tuningRange)
+    //   - IADLXManualVRAMTuning1 (Polaris / Vega):
+    //       GetVRAMTuningRanges(ADLX_IntRange* frequencyRange, ADLX_IntRange* voltageRange)
+    //
+    // Поэтому сначала пробуем v2 (RDNA) - если поддерживается, берём
+    // GetMaxVRAMFrequencyRange. Если v2 недоступен - fallback на v1
+    // (Polaris/Vega) и берём первый аргумент GetVRAMTuningRanges (frequencyRange).
     supported = false;
     if (ADLX_OK == tuningSvc->IsSupportedManualVRAMTuning(gpu.GetPtr(), &supported) && supported)
     {
         IADLXInterfacePtr rawIface;
         if (ADLX_OK == tuningSvc->GetManualVRAMTuning(gpu.GetPtr(), &rawIface) && rawIface)
         {
-            IADLXManualVRAMTuning1* vramTuning =
-                QueryManualTuning<IADLXManualVRAMTuning1>(rawIface.GetPtr(), L"IADLXManualVRAMTuning1");
-            if (vramTuning)
+            // Сначала пробуем v2 (RDNA)
+            IADLXManualVRAMTuning2* vram2 =
+                QueryManualTuning<IADLXManualVRAMTuning2>(rawIface.GetPtr(), L"IADLXManualVRAMTuning2");
+            if (vram2)
             {
                 ADLX_IntRange r = {0,0,0};
-                if (ADLX_OK == vramTuning->GetMaxVRAMFrequencyRange(&r))
+                if (ADLX_OK == vram2->GetMaxVRAMFrequencyRange(&r))
                 {
                     outRanges->vramMinMHz = (int32_t)r.minValue;
                     outRanges->vramMaxMHz = (int32_t)r.maxValue;
                     outRanges->vramStepMHz = (int32_t)r.step;
                 }
-                vramTuning->Release();
+                vram2->Release();
+            }
+            else
+            {
+                // Fallback на v1 (Polaris/Vega)
+                IADLXManualVRAMTuning1* vram1 =
+                    QueryManualTuning<IADLXManualVRAMTuning1>(rawIface.GetPtr(), L"IADLXManualVRAMTuning1");
+                if (vram1)
+                {
+                    ADLX_IntRange freqRange = {0,0,0};
+                    ADLX_IntRange voltRange = {0,0,0};
+                    if (ADLX_OK == vram1->GetVRAMTuningRanges(&freqRange, &voltRange))
+                    {
+                        outRanges->vramMinMHz = (int32_t)freqRange.minValue;
+                        outRanges->vramMaxMHz = (int32_t)freqRange.maxValue;
+                        outRanges->vramStepMHz = (int32_t)freqRange.step;
+                    }
+                    vram1->Release();
+                }
             }
         }
     }
