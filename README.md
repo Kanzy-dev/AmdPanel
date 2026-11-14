@@ -58,7 +58,7 @@ Built for users who prefer installing clean **Driver-Only** packages without the
 
 **One-click build:**
 ```cmd
-git clone https://github.com
+git clone https://github.com/Kanzy-dev/AmdPanel.git
 cd AmdPanel
 build.bat
 ```
