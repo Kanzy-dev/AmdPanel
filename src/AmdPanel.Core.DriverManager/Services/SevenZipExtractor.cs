@@ -173,7 +173,7 @@ public sealed class SevenZipExtractor
                     string destFile = Path.Combine(destinationDir, entry.Key);
                     string? destDir = Path.GetDirectoryName(destFile);
                     if (!string.IsNullOrEmpty(destDir)) Directory.CreateDirectory(destDir);
-                    entry.WriteTo(destFile);
+                    entry.WriteToFile(destFile);
                 }
                 done++;
                 progress?.Invoke(10 + (done * 70 / total), $"Extracted {done}/{total}");
