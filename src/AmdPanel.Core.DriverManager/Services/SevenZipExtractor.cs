@@ -3,6 +3,7 @@ using AmdPanel.Core.DriverManager.Exceptions;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
+using SharpCompress.Archives;
 
 namespace AmdPanel.Core.DriverManager.Services;
 
@@ -160,7 +161,7 @@ public sealed class SevenZipExtractor
         try
         {
             await using var fs = File.OpenRead(sourcePath);
-            using var archive = SevenZipArchive.Open(fs);
+            using var archive = SevenZipArchive.OpenArchive(fs);
             var entries = archive.Entries.ToList();
             int total = entries.Count;
             int done = 0;
