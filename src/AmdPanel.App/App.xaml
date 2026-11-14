@@ -1,0 +1,39 @@
+<Application x:Class="AmdPanel.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ViewModels="clr-namespace:AmdPanel.App.ViewModels.Pages;assembly=AmdPanel"
+             xmlns:Views="clr-namespace:AmdPanel.App.Views.Pages;assembly=AmdPanel"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Themes/Styles.xaml"/>
+        <ResourceDictionary Source="Themes/Strings.en.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+
+      <!-- DataTemplate mapping: VM → View. MainWindow.ContentControl связывается
+           с MainViewModel.ActivePage, WPF автоматически подбирает нужный View. -->
+      <DataTemplate DataType="{x:Type ViewModels:ThreeDSettingsPageViewModel}">
+        <Views:ThreeDSettingsPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:DisplayResolutionPageViewModel}">
+        <Views:DisplayResolutionPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:DisplayColorPageViewModel}">
+        <Views:DisplayColorPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:FreeSyncPageViewModel}">
+        <Views:FreeSyncPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:ScalingPageViewModel}">
+        <Views:ScalingPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:DriverManagerPageViewModel}">
+        <Views:DriverManagerPageView/>
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type ViewModels:PerformancePageViewModel}">
+        <Views:PerformancePageView/>
+      </DataTemplate>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

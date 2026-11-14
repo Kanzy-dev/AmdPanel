@@ -1,0 +1,85 @@
+<UserControl x:Class="AmdPanel.App.Views.Pages.DisplayResolutionPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.PanelBackground}">
+  <DockPanel LastChildFill="True" Margin="16,12">
+
+    <TextBlock DockPanel.Dock="Top"
+               Style="{StaticResource Header.Title}"
+               Text="{DynamicResource page.resolution.title}"
+               Margin="0,0,0,12"/>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Orientation="Vertical">
+
+        <!-- Монитор + порт -->
+        <DockPanel Margin="0,4">
+          <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                     Width="200" Text="{DynamicResource res.monitor}"/>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Style="{StaticResource Form.ValueLabel}"
+                       Text="{Binding MonitorName}"/>
+            <TextBlock Margin="12,0,0,0" Style="{StaticResource Form.Label}"
+                       Foreground="{StaticResource Brush.TextSecondary}"
+                       Text="{Binding PortName}"/>
+          </StackPanel>
+        </DockPanel>
+
+        <!-- Разрешение -->
+        <DockPanel Margin="0,8">
+          <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                     Width="200" Text="{DynamicResource res.resolution}"/>
+          <ComboBox Width="220"
+                    ItemsSource="{Binding Resolutions}"
+                    SelectedItem="{Binding SelectedResolution, Mode=TwoWay}"
+                    VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- Частота обновления -->
+        <DockPanel Margin="0,4">
+          <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                     Width="200" Text="{DynamicResource res.refreshRate}"/>
+          <ComboBox Width="220"
+                    ItemsSource="{Binding RefreshRates}"
+                    SelectedItem="{Binding SelectedRefresh, Mode=TwoWay}"
+                    VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- Глубина цвета -->
+        <DockPanel Margin="0,4">
+          <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                     Width="200" Text="{DynamicResource res.colorDepth}"/>
+          <ComboBox Width="220"
+                    ItemsSource="{Binding ColorDepths}"
+                    SelectedItem="{Binding SelectedBpc, Mode=TwoWay}"
+                    VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- Формат пикселей -->
+        <DockPanel Margin="0,4">
+          <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                     Width="200" Text="{DynamicResource res.pixelFormat}"/>
+          <ComboBox Width="220"
+                    ItemsSource="{Binding PixelFormats}"
+                    DisplayMemberPath="DisplayLabel"
+                    SelectedItem="{Binding SelectedPixelFormat, Mode=TwoWay}"
+                    VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- Предупреждение о превышении bandwidth порта -->
+        <Border Background="#FFF8E8" BorderBrush="#E0B870" BorderThickness="1"
+                CornerRadius="2" Padding="10,6" Margin="200,12,0,0"
+                Visibility="{Binding BandwidthExceeded, Converter={StaticResource Bool2Vis}}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="⚠" FontSize="16" Foreground="{StaticResource Brush.Warning}"
+                       Margin="0,0,8,0" VerticalAlignment="Center"/>
+            <TextBlock Style="{StaticResource Form.WarningText}" Margin="0">
+              <Run Text="{DynamicResource res.bandwidthWarning, Mode=OneWay}"/>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

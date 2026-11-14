@@ -1,0 +1,22 @@
+LIBRARY AmdPanel.NativeBridge
+EXPORTS
+    ADLXBridge_Initialize
+    ADLXBridge_InitializeWithIncompatibleDriver
+    ADLXBridge_Terminate
+    ADLXBridge_QueryVersion
+    ADLXBridge_GetGpuCount
+    ADLXBridge_GetGpuInfo
+    ADLXBridge_GetGpuCapabilities
+    ADLXBridge_GetGpuTuningRanges
+    ADLXBridge_GetDisplayCount
+    ADLXBridge_GetDisplayInfo
+    ADLXBridge_GetDisplayResolutionList
+    ADLXBridge_GetDisplayRefreshRateList
+    ADLXBridge_GetDisplayFreeSyncSupport
+    ADLXBridge_GetDisplayScalingMode
+    ADLXBridge_SetDisplayScalingMode
+    ADLXBridge_GetDisplayPixelFormat
+    ADLXBridge_SetDisplayPixelFormat
+    ADLXBridge_GetDisplayColorDepth
+    ADLXBridge_SetDisplayColorDepth
+    ADLXBridge_FreeBuffer

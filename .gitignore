@@ -1,0 +1,102 @@
+## ==========================================================
+##  .gitignore for AmdPanel (VS 2022 / .NET 8 / C++ / WPF)
+##  third_party/ADLXSDK сохраняется в репозитории.
+## ==========================================================
+
+## --- Visual Studio ---
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## --- Build output (любая конфигурация) ---
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.dll.config
+*.pdb
+*.ilk
+*.exp
+*.map
+*.lib
+*.exe.config
+
+## --- Native C++ build artefacts ---
+*.aps
+*.tlog
+*.lastbuildstate
+*.unsuccessfulbuild
+*.cache
+*.idb
+*.ipdb
+*.iobj
+*.obj
+BuildLog.htm
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.opendb
+
+## --- .NET artefacts ---
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+## --- NuGet ---
+*.nupkg
+*.snupkg
+.nuget/
+
+## --- Test / coverage ---
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResults/
+coverage*.xml
+coverage*.json
+coverage*/
+
+## --- Release staging (создаётся build.ps1) ---
+dist/
+
+## --- Local user data (на dev-машине при запуске AmdPanel.exe) ---
+*.local.json
+profiles/
+backups/
+registry-tasks/
+settings.local.json
+
+## --- IDE / editors ---
+.idea/
+*.swp
+*~
+.vscode/
+*.code-workspace
+
+## --- OS metadata ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## --- Logs ---
+*.log
+logs/
+
+## --- Package managers local cache ---
+node_modules/
+package-lock.json
+yarn.lock
+
+## --- ВАЖНО: third_party/ADLXSDK НЕ игнорируется ---
+## SDK распространяется по лицензии AMD и должен быть в репозитории
+## для воспроизводимой сборки.
+!third_party/
+!third_party/ADLXSDK/

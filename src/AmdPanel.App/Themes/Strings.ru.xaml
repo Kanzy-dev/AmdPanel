@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <!-- ===== Строки интерфейса (Русский) ===== -->
+  <sys:String x:Key="app.title">Панель управления AMD</sys:String>
+  <sys:String x:Key="app.subtitle">Лёгкая нативная панель управления для видеокарт AMD</sys:String>
+
+  <!-- Шапка -->
+  <sys:String x:Key="header.gpu">Активный GPU</sys:String>
+  <sys:String x:Key="header.language">Язык</sys:String>
+  <sys:String x:Key="header.rescan">Пересканировать</sys:String>
+  <sys:String x:Key="header.driverOnly">Режим Driver-Only</sys:String>
+  <sys:String x:Key="header.adrenalinInstalled">Adrenalin установлен</sys:String>
+
+  <!-- Дерево навигации -->
+  <sys:String x:Key="nav.3dSettings">Параметры 3D</sys:String>
+  <sys:String x:Key="nav.3dSettings.manage">Управление параметрами 3D</sys:String>
+  <sys:String x:Key="nav.display">Дисплей</sys:String>
+  <sys:String x:Key="nav.display.resolution">Изменение разрешения</sys:String>
+  <sys:String x:Key="nav.display.color">Параметры цвета рабочего стола</sys:String>
+  <sys:String x:Key="nav.display.freesync">Настройка FreeSync</sys:String>
+  <sys:String x:Key="nav.display.scaling">Размер и положение рабочего стола</sys:String>
+  <sys:String x:Key="nav.performance">Производительность</sys:String>
+  <sys:String x:Key="nav.performance.monitor">Мониторинг и вентиляторы</sys:String>
+  <sys:String x:Key="nav.system">Система</sys:String>
+  <sys:String x:Key="nav.system.driverManager">Управление драйверами</sys:String>
+
+  <!-- Применить / Отмена -->
+  <sys:String x:Key="actions.apply">Применить</sys:String>
+  <sys:String x:Key="actions.cancel">Отмена</sys:String>
+  <sys:String x:Key="actions.browse">Обзор…</sys:String>
+  <sys:String x:Key="actions.checkUpdates">Проверить обновления</sys:String>
+  <sys:String x:Key="actions.installClean">Установить чистый драйвер</sys:String>
+  <sys:String x:Key="actions.cleanInstall">Выполнить чистую установку (сброс старого драйвера)</sys:String>
+  <sys:String x:Key="actions.uacTooltip">Это действие требует прав администратора</sys:String>
+
+  <!-- Страница параметров 3D -->
+  <sys:String x:Key="page.3dSettings.title">Управление параметрами 3D</sys:String>
+  <sys:String x:Key="page.3dSettings.tabGlobal">Глобальные параметры</sys:String>
+  <sys:String x:Key="page.3dSettings.tabProgram">Программные настройки</sys:String>
+  <sys:String x:Key="d3.antiLag">Radeon Anti-Lag</sys:String>
+  <sys:String x:Key="d3.chill">Radeon Chill</sys:String>
+  <sys:String x:Key="d3.chillMinFps">Chill: мин. FPS</sys:String>
+  <sys:String x:Key="d3.chillMaxFps">Chill: макс. FPS</sys:String>
+  <sys:String x:Key="d3.imageSharpening">Radeon Image Sharpening</sys:String>
+  <sys:String x:Key="d3.sharpness">Резкость</sys:String>
+  <sys:String x:Key="d3.boost">Radeon Boost</sys:String>
+  <sys:String x:Key="d3.vsync">Вертикальная синхронизация (V-Sync)</sys:String>
+  <sys:String x:Key="d3.aniso">Анизотропная фильтрация</sys:String>
+  <sys:String x:Key="d3.tessellation">Уровень тесселяции</sys:String>
+  <sys:String x:Key="d3.unsupported">Не поддерживается оборудованием</sys:String>
+
+  <!-- Страница разрешения -->
+  <sys:String x:Key="page.resolution.title">Изменение разрешения</sys:String>
+  <sys:String x:Key="res.monitor">Монитор</sys:String>
+  <sys:String x:Key="res.resolution">Разрешение</sys:String>
+  <sys:String x:Key="res.refreshRate">Частота обновления (Гц)</sys:String>
+  <sys:String x:Key="res.colorDepth">Глубина цвета (bpc)</sys:String>
+  <sys:String x:Key="res.pixelFormat">Формат пикселей</sys:String>
+  <sys:String x:Key="res.bandwidthWarning">⚠ Эта комбинация превышает пропускную способность активного порта ({0}). Используйте на свой риск — возможен чёрный экран.</sys:String>
+
+  <!-- Страница цвета -->
+  <sys:String x:Key="page.color.title">Параметры цвета рабочего стола</sys:String>
+  <sys:String x:Key="color.brightness">Яркость</sys:String>
+  <sys:String x:Key="color.contrast">Контрастность</sys:String>
+  <sys:String x:Key="color.gamma">Гамма</sys:String>
+  <sys:String x:Key="color.saturation">Насыщенность (Digital Vibrance)</sys:String>
+  <sys:String x:Key="color.reset">Сбросить к значениям по умолчанию</sys:String>
+
+  <!-- Страница FreeSync -->
+  <sys:String x:Key="page.freesync.title">AMD FreeSync</sys:String>
+  <sys:String x:Key="fs.enable">Включить FreeSync</sys:String>
+  <sys:String x:Key="fs.range">Поддерживаемый диапазон герцовки</sys:String>
+  <sys:String x:Key="fs.notSupported">FreeSync не поддерживается данным монитором или портом.</sys:String>
+
+  <!-- Страница масштабирования -->
+  <sys:String x:Key="page.scaling.title">Размер и положение рабочего стола</sys:String>
+  <sys:String x:Key="scaling.mode">Режим масштабирования</sys:String>
+  <sys:String x:Key="scaling.fullscreen">Во весь экран</sys:String>
+  <sys:String x:Key="scaling.aspectRatio">Формат изображения</sys:String>
+  <sys:String x:Key="scaling.noScaling">Без масштабирования</sys:String>
+  <sys:String x:Key="scaling.centered">По центру</sys:String>
+  <sys:String x:Key="scaling.device">Устройство масштабирования</sys:String>
+  <sys:String x:Key="scalingDevice.gpu">GPU</sys:String>
+  <sys:String x:Key="scalingDevice.display">Дисплей</sys:String>
+
+  <!-- Страница драйверов -->
+  <sys:String x:Key="page.driverManager.title">Управление драйверами</sys:String>
+  <sys:String x:Key="drv.currentGpu">Текущий GPU</sys:String>
+  <sys:String x:Key="drv.driverVersion">Версия драйвера</sys:String>
+  <sys:String x:Key="drv.adlxVersion">Версия ADLX SDK</sys:String>
+  <sys:String x:Key="drv.installMode">Режим установки</sys:String>
+  <sys:String x:Key="drv.registryPath">Путь в реестре</sys:String>
+  <sys:String x:Key="drv.sourceFile">Исходный файл (.exe / .inf)</sys:String>
+  <sys:String x:Key="drv.installLog">Лог установки</sys:String>
+
+  <!-- Страница производительности -->
+  <sys:String x:Key="page.performance.title">Мониторинг производительности</sys:String>
+  <sys:String x:Key="perf.temperature">Температура GPU (°C)</sys:String>
+  <sys:String x:Key="perf.usage">Загрузка GPU (%)</sys:String>
+  <sys:String x:Key="perf.gpuClock">Частота GPU (МГц)</sys:String>
+  <sys:String x:Key="perf.vramClock">Частота VRAM (МГц)</sys:String>
+  <sys:String x:Key="perf.fanRpm">Обороты вентилятора (RPM)</sys:String>
+  <sys:String x:Key="perf.power">Энергопотребление (Вт)</sys:String>
+
+  <!-- Диалог watchdog -->
+  <sys:String x:Key="watchdog.title">Сохранить новые настройки дисплея?</sys:String>
+  <sys:String x:Key="watchdog.message">Если вы не ответите в течение {0} секунд, предыдущие настройки будут восстановлены автоматически.</sys:String>
+  <sys:String x:Key="watchdog.previous">Предыдущий режим</sys:String>
+  <sys:String x:Key="watchdog.new">Новый режим</sys:String>
+  <sys:String x:Key="watchdog.yes">Да</sys:String>
+  <sys:String x:Key="watchdog.no">Нет</sys:String>
+
+  <!-- Строка статуса -->
+  <sys:String x:Key="status.applied">Настройки применены</sys:String>
+  <sys:String x:Key="status.cancelled">Изменения отменены</sys:String>
+  <sys:String x:Key="status.scanning">Сканирование оборудования…</sys:String>
+  <sys:String x:Key="status.scanComplete">Сканирование завершено</sys:String>
+  <sys:String x:Key="status.resolutionApplied">Разрешение применено</sys:String>
+  <sys:String x:Key="status.colorApplied">Цветовые настройки применены</sys:String>
+  <sys:String x:Key="status.freesyncApplied">Настройка FreeSync применена</sys:String>
+  <sys:String x:Key="status.scalingApplied">Настройка масштабирования применена</sys:String>
+  <sys:String x:Key="status.d3Applied">Параметры 3D применены</sys:String>
+  <sys:String x:Key="status.watchdogReverted">Выполнен автоматический откат через {0} секунд</sys:String>
+  <sys:String x:Key="status.selectDriverFile">Сначала выберите файл драйвера</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,171 @@
+name: Release Build
+
+# Triggered on:
+#   - any tag matching v* (e.g. v1.0.0, v1.1.0-beta)
+#   - manual dispatch from Actions tab
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version label (e.g. 1.0.0)'
+        required: false
+        default: '1.0.0'
+
+permissions:
+  contents: write   # required to publish GitHub Releases
+
+jobs:
+  build:
+    name: Build AmdPanel (Windows x64)
+    runs-on: windows-latest
+
+    env:
+      CONFIGURATION: Release
+      PLATFORM: x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild (VS 2022)
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Locate Visual Studio components
+        id: vs
+        shell: powershell
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { $vswhere = "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe" }
+          $vsRoot = & $vswhere -latest -property installationPath
+          Write-Host "VS install path: $vsRoot"
+          echo "VSWHERE=$vswhere" >> $env:GITHUB_ENV
+          echo "VSROOT=$vsRoot"   >> $env:GITHUB_ENV
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: dotnet restore AmdPanel.sln --nologo --verbosity quiet
+
+      - name: Build AmdPanel.NativeBridge (C++ DLL)
+        shell: pwsh
+        run: |
+          $msb = & "${env:VSWHERE}" -latest -requires Microsoft.Component.MSBuild `
+                 -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          Write-Host "MSBuild: $msb"
+          & $msb "src\AmdPanel.NativeBridge\AmdPanel.NativeBridge.vcxproj" `
+              /t:Build /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /m /nologo /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Stage NativeBridge.dll to build\NativeBridge\ so C# projects pick it up
+          New-Item -ItemType Directory -Force -Path "build\NativeBridge" | Out-Null
+          Copy-Item "src\AmdPanel.NativeBridge\$env:PLATFORM\$env:CONFIGURATION\AmdPanel.NativeBridge.dll" `
+                    -Destination "build\NativeBridge\" -Force
+          Copy-Item "src\AmdPanel.NativeBridge\$env:PLATFORM\$env:CONFIGURATION\AmdPanel.NativeBridge.pdb" `
+                    -Destination "build\NativeBridge\" -Force -ErrorAction SilentlyContinue
+
+      - name: Build AmdPanel.App (.NET 8 WPF)
+        shell: pwsh
+        run: |
+          dotnet build src\AmdPanel.App\AmdPanel.App.csproj `
+              -c $env:CONFIGURATION -p:Platform=$env:PLATFORM `
+              --no-restore --nologo -v minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Determine release version
+        id: rel
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -match 'refs/tags/v(.+)') {
+            $ver = $Matches[1]
+          } elseif ($env:INPUT_VERSION) {
+            $ver = $env:INPUT_VERSION
+          } else {
+            $ver = '1.0.0'
+          }
+          Write-Host "Version: $ver"
+          echo "version=$ver" >> $env:GITHUB_OUTPUT
+          echo "archive_name=AmdPanel-v$ver-win-x64.zip" >> $env:GITHUB_OUTPUT
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+
+      - name: Stage release directory
+        shell: pwsh
+        run: |
+          $stage = "dist\AmdPanel-v${{ steps.rel.outputs.version }}-win-x64"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          $appOut = "src\AmdPanel.App\bin\$env:CONFIGURATION\net8.0-windows10.0.19041.0"
+          if (-not (Test-Path "$appOut\AmdPanel.exe")) {
+            $appOut = "src\AmdPanel.App\bin\$env:CONFIGURATION\net8.0-windows"
+          }
+          Copy-Item "$appOut\*" -Destination $stage -Recurse -Force
+          # Ensure NativeBridge.dll
+          if (-not (Test-Path "$stage\AmdPanel.NativeBridge.dll")) {
+            Copy-Item "build\NativeBridge\AmdPanel.NativeBridge.dll" -Destination $stage -Force
+          }
+          Copy-Item "LICENSE" -Destination $stage -Force -ErrorAction SilentlyContinue
+          Copy-Item "README.md" -Destination $stage -Force -ErrorAction SilentlyContinue
+          Write-Host "Staged to: $stage"
+          Get-ChildItem $stage | ForEach-Object { Write-Host "  $($_.Name)" }
+
+      - name: Create release ZIP
+        shell: pwsh
+        run: |
+          $stage = "dist\AmdPanel-v${{ steps.rel.outputs.version }}-win-x64"
+          $zip = "dist\${{ steps.rel.outputs.archive_name }}"
+          Compress-Archive -Path "$stage\*" -DestinationPath $zip -CompressionLevel Optimal
+          Write-Host "Created: $zip"
+          Get-Item $zip | Select-Object FullName,Length
+
+      - name: Upload artifact (always, even on tag dispatch)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.rel.outputs.archive_name }}
+          path: dist/${{ steps.rel.outputs.archive_name }}
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: AmdPanel ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            # AmdPanel ${{ github.ref_name }}
+
+            Lightweight native control panel for AMD GPUs (Polaris / RDNA 1/2/3/4).
+
+            ## Downloads
+
+            - **AmdPanel-v${{ steps.rel.outputs.version }}-win-x64.zip** — Windows x64 release (unzip and run `AmdPanel.exe`)
+              - Requires: Windows 10 1903+ / Windows 11, AMD Driver-Only installation
+              - Includes: `AmdPanel.exe`, `AmdPanel.NativeBridge.dll`, all .NET dependencies
+
+            ## Install
+
+            1. Unzip `AmdPanel-v${{ steps.rel.outputs.version }}-win-x64.zip` to any folder
+            2. Run `AmdPanel.exe` (runs as `asInvoker`; UAC prompts only for HKLM writes / driver install)
+            3. Make sure your AMD driver is installed (Driver-Only mode is sufficient)
+
+            ## CLI
+
+            ```cmd
+            AmdPanel.exe --apply-profile C:\Users\me\AppData\Roaming\AmdPanel\profiles\abc123.json
+            AmdPanel.exe --install-driver "C:\Downloads\amd-driver.exe" --clean true
+            ```
+
+            See README.md for full documentation.
+          files: |
+            dist/${{ steps.rel.outputs.archive_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true

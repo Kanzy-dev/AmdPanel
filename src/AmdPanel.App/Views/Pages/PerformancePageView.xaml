@@ -1,0 +1,79 @@
+<UserControl x:Class="AmdPanel.App.Views.Pages.PerformancePageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource Brush.PanelBackground}">
+  <DockPanel LastChildFill="True" Margin="16,12">
+
+    <TextBlock DockPanel.Dock="Top"
+               Style="{StaticResource Header.Title}"
+               Text="{DynamicResource page.performance.title}"
+               Margin="0,0,0,12"/>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.temperature}"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding GpuTemperature, Mode=OneWay, StringFormat=F1}"/>
+          <Run Text=" °C"/>
+        </TextBlock>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.usage}"/>
+        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding GpuUsage, Mode=OneWay, StringFormat=F1}"/>
+          <Run Text=" %"/>
+        </TextBlock>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.gpuClock}"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding GpuClockMHz, Mode=OneWay}"/>
+          <Run Text=" MHz"/>
+        </TextBlock>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.vramClock}"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding VramClockMHz, Mode=OneWay}"/>
+          <Run Text=" MHz"/>
+        </TextBlock>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.fanRpm}"/>
+        <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding FanRpm, Mode=OneWay}"/>
+          <Run Text=" RPM"/>
+        </TextBlock>
+
+        <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource Form.Label}"
+                   Margin="0,4" Width="220" Text="{DynamicResource perf.power}"/>
+        <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
+                   Margin="0,4">
+          <Run Text="{Binding PowerDrawWatts, Mode=OneWay, StringFormat=F1}"/>
+          <Run Text=" W"/>
+        </TextBlock>
+      </Grid>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

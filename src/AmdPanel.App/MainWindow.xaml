@@ -1,0 +1,149 @@
+<Window x:Class="AmdPanel.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:AmdPanel.App.ViewModels;assembly=AmdPanel"
+        Title="{DynamicResource app.title}"
+        Height="720" Width="1100" MinHeight="560" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource Window.Main}">
+  <Window.Resources>
+    <!-- HierarchicalDataTemplate: нода навигации -->
+    <HierarchicalDataTemplate DataType="{x:Type vm:NavigationNode}"
+                              ItemsSource="{Binding Children}">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Style="{StaticResource Nav.PageLabel}"
+                   Text="{Binding Key, Converter={x:Static vm:NavKeyToTextConverter.Instance}}"/>
+      </StackPanel>
+    </HierarchicalDataTemplate>
+  </Window.Resources>
+
+  <DockPanel LastChildFill="True">
+    <!-- ===== Шапка ===== -->
+    <Border DockPanel.Dock="Top" Style="{StaticResource Header.Panel}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Логотип + название -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,24,0">
+          <TextBlock Text="AMD" FontWeight="Bold" FontSize="18"
+                     Foreground="{StaticResource Brush.Accent}"
+                     VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <TextBlock Style="{StaticResource Header.Title}"
+                     Text="{DynamicResource app.title}"/>
+        </StackPanel>
+
+        <!-- Селектор активного GPU (Multi-GPU + iGPU support) -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,12,0">
+          <TextBlock Style="{StaticResource Header.Label}"
+                     Text="{DynamicResource header.gpu}" Margin="0,0,8,0"/>
+          <ComboBox Style="{StaticResource Combo.Selector}"
+                    ItemsSource="{Binding Gpus}"
+                    DisplayMemberPath="DisplayString"
+                    SelectedItem="{Binding SelectedGpu, Mode=TwoWay}"/>
+        </StackPanel>
+
+        <!-- Селектор языка -->
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,12,0">
+          <TextBlock Style="{StaticResource Header.Label}"
+                     Text="{DynamicResource header.language}" Margin="0,0,8,0"/>
+          <ComboBox Style="{StaticResource Combo.Selector}" MinWidth="100"
+                    SelectedIndex="0"
+                    x:Name="LanguageCombo">
+            <ComboBoxItem Content="EN"/>
+            <ComboBoxItem Content="RU"/>
+          </ComboBox>
+        </StackPanel>
+
+        <!-- Кнопка "Пересканировать" -->
+        <Button Grid.Column="4" Style="{StaticResource Button.Standard}"
+                Margin="0,0,8,0"
+                Command="{Binding RescanCommand}"
+                Content="{DynamicResource header.rescan}"/>
+
+        <!-- Кнопка "О программе" (v1.0.0) -->
+        <Button Grid.Column="5" Style="{StaticResource Button.Standard}"
+                Click="OnAboutClick"
+                Content="About"/>
+      </Grid>
+    </Border>
+
+    <!-- Под-шапка: статус Driver-Only / Adrenalin -->
+    <Border DockPanel.Dock="Top" Background="#FFFFFF"
+            BorderBrush="{StaticResource Brush.Border}"
+            BorderThickness="0,0,0,1" Padding="12,4">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Style="{StaticResource Header.Label}"
+                   Text="{DynamicResource header.driverOnly}"
+                   Visibility="{Binding IsDriverOnly, Converter={StaticResource Bool2Vis}}"/>
+        <TextBlock Style="{StaticResource Header.Label}"
+                   Text="{DynamicResource header.adrenalinInstalled}"
+                   Visibility="{Binding IsDriverOnly, Converter={StaticResource Bool2Vis}, ConverterParameter=invert}"/>
+        <TextBlock Margin="20,0,0,0" VerticalAlignment="Center"
+                   Foreground="{StaticResource Brush.TextSecondary}"
+                   FontSize="12">
+          <Run Text="ADLX"/>
+          <Run Text=" "/>
+          <Run Text="{Binding AdlxVersion, Mode=OneWay}"/>
+        </TextBlock>
+      </StackPanel>
+    </Border>
+
+    <!-- ===== Строка статуса ===== -->
+    <Border DockPanel.Dock="Bottom" Style="{StaticResource StatusBar.Panel}">
+      <DockPanel LastChildFill="True">
+        <!-- Apply / Cancel справа от статусбара -->
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,0,0">
+          <Button Style="{StaticResource Button.Standard}" Margin="0,0,8,0"
+                  Width="100"
+                  Content="{DynamicResource actions.cancel}"
+                  Command="{Binding CancelCommand}"
+                  IsCancel="True"/>
+          <Button Style="{StaticResource Button.Accent}"
+                  Width="100"
+                  Content="{DynamicResource actions.apply}"
+                  Command="{Binding ApplyCommand}"
+                  IsDefault="True"/>
+        </StackPanel>
+        <TextBlock Style="{StaticResource StatusBar.Text}"
+                   Text="{Binding StatusText, Mode=OneWay}"/>
+      </DockPanel>
+    </Border>
+
+    <!-- ===== Тело: TreeView | ContentControl ===== -->
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="260" MinWidth="200"/>
+        <ColumnDefinition Width="5"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- Дерево навигации -->
+      <TreeView Grid.Column="0" Style="{StaticResource Nav.Tree}"
+                ItemsSource="{Binding Navigation}"
+                SelectedItemChanged="OnNavSelectedChanged"
+                x:Name="NavTree">
+        <TreeView.ItemContainerStyle>
+          <Style TargetType="TreeViewItem" BasedOn="{StaticResource Nav.TreeItem}">
+            <Setter Property="IsExpanded" Value="True"/>
+            <Setter Property="IsSelected" Value="{Binding IsInitiallySelected, Mode=OneWay}"/>
+          </Style>
+        </TreeView.ItemContainerStyle>
+      </TreeView>
+
+      <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                    Background="{StaticResource Brush.Border}"/>
+
+      <!-- Активная страница -->
+      <ContentControl Grid.Column="2"
+                      Content="{Binding ActivePage}"
+                      Margin="0"/>
+    </Grid>
+  </DockPanel>
+</Window>

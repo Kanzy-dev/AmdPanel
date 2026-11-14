@@ -1,0 +1,240 @@
+<UserControl x:Class="AmdPanel.App.Views.Pages.ThreeDSettingsPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AmdPanel.App.ViewModels;assembly=AmdPanel"
+             Background="{StaticResource Brush.PanelBackground}">
+  <DockPanel LastChildFill="True" Margin="16,12">
+
+    <!-- Заголовок страницы -->
+    <TextBlock DockPanel.Dock="Top"
+               Style="{StaticResource Header.Title}"
+               Text="{DynamicResource page.3dSettings.title}"
+               Margin="0,0,0,12"/>
+
+    <!-- Табы: Глобальные параметры / Программные настройки -->
+    <TabControl DockPanel.Dock="Top" Margin="0,0,0,8">
+      <TabItem Header="{DynamicResource page.3dSettings.tabGlobal}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,8">
+          <StackPanel Orientation="Vertical">
+
+            <!-- Anti-Lag -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.antiLag}"/>
+              <CheckBox IsChecked="{Binding AntiLag, Mode=TwoWay}"
+                        IsEnabled="{Binding CanAntiLag}"
+                        VerticalAlignment="Center"/>
+              <TextBlock Style="{StaticResource Form.WarningText}"
+                         Margin="12,0,0,0"
+                         Text="{DynamicResource d3.unsupported}"
+                         Visibility="{Binding CanAntiLag, Converter={StaticResource Bool2Vis}, ConverterParameter=invert}"/>
+            </DockPanel>
+
+            <!-- Chill + min/max -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.chill}"/>
+              <CheckBox IsChecked="{Binding Chill, Mode=TwoWay}"
+                        IsEnabled="{Binding CanChill}"
+                        VerticalAlignment="Center"/>
+            </DockPanel>
+            <DockPanel Margin="0,4" Visibility="{Binding Chill, Converter={StaticResource Bool2Vis}}">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.chillMinFps}"/>
+              <Slider Minimum="30" Maximum="240" Width="200"
+                      Value="{Binding ChillMinFps, Mode=TwoWay}"
+                      TickFrequency="1" IsSnapToTickEnabled="True"
+                      VerticalAlignment="Center"/>
+              <TextBlock Style="{StaticResource Form.ValueLabel}"
+                         Margin="8,0,0,0" Width="40"
+                         Text="{Binding ChillMinFps}"/>
+            </DockPanel>
+            <DockPanel Margin="0,4" Visibility="{Binding Chill, Converter={StaticResource Bool2Vis}}">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.chillMaxFps}"/>
+              <Slider Minimum="60" Maximum="300" Width="200"
+                      Value="{Binding ChillMaxFps, Mode=TwoWay}"
+                      TickFrequency="1" IsSnapToTickEnabled="True"
+                      VerticalAlignment="Center"/>
+              <TextBlock Style="{StaticResource Form.ValueLabel}"
+                         Margin="8,0,0,0" Width="40"
+                         Text="{Binding ChillMaxFps}"/>
+            </DockPanel>
+
+            <!-- Image Sharpening + Sharpness -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.imageSharpening}"/>
+              <CheckBox IsChecked="{Binding ImageSharpening, Mode=TwoWay}"
+                        IsEnabled="{Binding CanImageSharpen}"
+                        VerticalAlignment="Center"/>
+            </DockPanel>
+            <DockPanel Margin="0,4" Visibility="{Binding ImageSharpening, Converter={StaticResource Bool2Vis}}">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.sharpness}"/>
+              <Slider Minimum="0" Maximum="100" Width="220"
+                      Value="{Binding Sharpness, Mode=TwoWay}"
+                      TickFrequency="1" IsSnapToTickEnabled="True"
+                      VerticalAlignment="Center"/>
+              <TextBlock Style="{StaticResource Form.ValueLabel}"
+                         Margin="8,0,0,0" Width="40"
+                         Text="{Binding Sharpness}"/>
+            </DockPanel>
+
+            <!-- Boost -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.boost}"/>
+              <CheckBox IsChecked="{Binding Boost, Mode=TwoWay}"
+                        IsEnabled="{Binding CanBoost}"
+                        VerticalAlignment="Center"/>
+            </DockPanel>
+
+            <!-- V-Sync (ComboBox: Always Off / On unless app specifies / Always On) -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.vsync}"/>
+              <ComboBox IsEnabled="{Binding CanWaitForVRefresh}"
+                        SelectedIndex="{Binding VSyncMode, Mode=TwoWay}"
+                        Width="240" VerticalAlignment="Center">
+                <ComboBoxItem Content="Always Off"/>
+                <ComboBoxItem Content="On unless app specifies"/>
+                <ComboBoxItem Content="Always On"/>
+              </ComboBox>
+            </DockPanel>
+
+            <!-- Anisotropic Filtering -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.aniso}"/>
+              <ComboBox IsEnabled="{Binding CanAnisotropic}"
+                        SelectedIndex="{Binding AnisoLevel, Mode=TwoWay}"
+                        Width="160" VerticalAlignment="Center">
+                <ComboBoxItem Content="Off"/>
+                <ComboBoxItem Content="2x"/>
+                <ComboBoxItem Content="4x"/>
+                <ComboBoxItem Content="8x"/>
+                <ComboBoxItem Content="16x"/>
+              </ComboBox>
+            </DockPanel>
+
+            <!-- Tessellation -->
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.tessellation}"/>
+              <ComboBox IsEnabled="{Binding CanTessellation}"
+                        SelectedIndex="{Binding TessLevel, Mode=TwoWay}"
+                        Width="160" VerticalAlignment="Center">
+                <ComboBoxItem Content="Optimized"/>
+                <ComboBoxItem Content="8x"/>
+                <ComboBoxItem Content="16x"/>
+                <ComboBoxItem Content="32x"/>
+                <ComboBoxItem Content="64x"/>
+              </ComboBox>
+            </DockPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="{DynamicResource page.3dSettings.tabProgram}">
+        <DockPanel Margin="8">
+          <!-- Левая колонка: список приложений -->
+          <DockPanel DockPanel.Dock="Left" Width="280" Margin="0,0,8,0">
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Form.Label}"
+                       Text="Programs" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <ListBox ItemsSource="{Binding ApplicationProfiles}"
+                     SelectedItem="{Binding SelectedApplication, Mode=TwoWay}"
+                     Height="280" Margin="0,0,0,4">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Margin="0,2">
+                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding ProcessName}" FontSize="11"
+                               Foreground="{StaticResource Brush.TextSecondary}"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <DockPanel>
+              <TextBox Width="160" VerticalAlignment="Center"
+                       Text="{Binding NewProcessName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <Button Style="{StaticResource Button.Standard}" Margin="4,0,0,0"
+                      Width="50" Click="OnAddApplicationClick" Content="+"/>
+              <Button Style="{StaticResource Button.Standard}" Margin="4,0,0,0"
+                      Width="50" Click="OnRemoveApplicationClick" Content="-"/>
+            </DockPanel>
+            <TextBlock Margin="0,8,0,0" FontSize="11"
+                       Foreground="{StaticResource Brush.TextSecondary}"
+                       TextWrapping="Wrap"
+                       Text="Enter process name (e.g. cyberpunk2077). Profile will auto-apply when process starts, and revert to global on exit."/>
+          </DockPanel>
+
+          <!-- Правая колонка: редактор 3D-настроек выбранного приложения -->
+          <StackPanel VerticalAlignment="Top" IsEnabled="{Binding SelectedApplication, Converter={x:Static vm:NullToBoolConverter.Instance}}">
+            <TextBlock Style="{StaticResource Form.ValueLabel}" Margin="0,0,0,8"
+                       Text="{Binding SelectedApplication.DisplayName, StringFormat='Editing: {0}'}"/>
+
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.antiLag}"/>
+              <CheckBox IsChecked="{Binding AppAntiLag, Mode=TwoWay}"
+                        IsEnabled="{Binding CanAntiLag}"
+                        VerticalAlignment="Center"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.chill}"/>
+              <CheckBox IsChecked="{Binding AppChill, Mode=TwoWay}"
+                        IsEnabled="{Binding CanChill}"
+                        VerticalAlignment="Center"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.sharpness}"/>
+              <Slider Minimum="0" Maximum="100" Width="220"
+                      Value="{Binding AppSharpness, Mode=TwoWay}"
+                      TickFrequency="1" IsSnapToTickEnabled="True"
+                      VerticalAlignment="Center"/>
+              <TextBlock Style="{StaticResource Form.ValueLabel}"
+                         Margin="8,0,0,0" Width="40"
+                         Text="{Binding AppSharpness}"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.vsync}"/>
+              <ComboBox SelectedIndex="{Binding AppVSync, Mode=TwoWay}"
+                        IsEnabled="{Binding CanWaitForVRefresh}"
+                        Width="220" VerticalAlignment="Center">
+                <ComboBoxItem Content="Always Off"/>
+                <ComboBoxItem Content="On unless app specifies"/>
+                <ComboBoxItem Content="Always On"/>
+              </ComboBox>
+            </DockPanel>
+
+            <DockPanel Margin="0,4">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource Form.Label}"
+                         Width="280" Text="{DynamicResource d3.tessellation}"/>
+              <ComboBox SelectedIndex="{Binding AppTess, Mode=TwoWay}"
+                        IsEnabled="{Binding CanTessellation}"
+                        Width="160" VerticalAlignment="Center">
+                <ComboBoxItem Content="Optimized"/>
+                <ComboBoxItem Content="8x"/>
+                <ComboBoxItem Content="16x"/>
+                <ComboBoxItem Content="32x"/>
+                <ComboBoxItem Content="64x"/>
+              </ComboBox>
+            </DockPanel>
+
+            <Button Style="{StaticResource Button.Accent}" Margin="280,12,0,0"
+                    HorizontalAlignment="Left" Width="120"
+                    Click="OnSaveApplicationClick"
+                    Content="{DynamicResource actions.apply}"/>
+          </StackPanel>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>

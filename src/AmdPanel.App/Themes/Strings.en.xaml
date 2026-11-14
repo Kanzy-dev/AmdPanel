@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <!-- ===== Application strings (English) ===== -->
+  <sys:String x:Key="app.title">AMD Control Panel</sys:String>
+  <sys:String x:Key="app.subtitle">Lightweight native control panel for AMD GPUs</sys:String>
+
+  <!-- Header -->
+  <sys:String x:Key="header.gpu">Active GPU</sys:String>
+  <sys:String x:Key="header.language">Language</sys:String>
+  <sys:String x:Key="header.rescan">Rescan</sys:String>
+  <sys:String x:Key="header.driverOnly">Driver-Only mode</sys:String>
+  <sys:String x:Key="header.adrenalinInstalled">Adrenalin installed</sys:String>
+
+  <!-- Navigation tree -->
+  <sys:String x:Key="nav.3dSettings">3D Settings</sys:String>
+  <sys:String x:Key="nav.3dSettings.manage">Manage 3D Settings</sys:String>
+  <sys:String x:Key="nav.display">Display</sys:String>
+  <sys:String x:Key="nav.display.resolution">Change Resolution</sys:String>
+  <sys:String x:Key="nav.display.color">Desktop Color Settings</sys:String>
+  <sys:String x:Key="nav.display.freesync">FreeSync Settings</sys:String>
+  <sys:String x:Key="nav.display.scaling">Desktop Scaling</sys:String>
+  <sys:String x:Key="nav.performance">Performance</sys:String>
+  <sys:String x:Key="nav.performance.monitor">Monitoring &amp; Fan Control</sys:String>
+  <sys:String x:Key="nav.system">System</sys:String>
+  <sys:String x:Key="nav.system.driverManager">Driver Manager</sys:String>
+
+  <!-- Apply / Cancel -->
+  <sys:String x:Key="actions.apply">Apply</sys:String>
+  <sys:String x:Key="actions.cancel">Cancel</sys:String>
+  <sys:String x:Key="actions.browse">Browse…</sys:String>
+  <sys:String x:Key="actions.checkUpdates">Check for Updates</sys:String>
+  <sys:String x:Key="actions.installClean">Install Clean Driver</sys:String>
+  <sys:String x:Key="actions.cleanInstall">Perform clean install (remove old driver)</sys:String>
+  <sys:String x:Key="actions.uacTooltip">This action requires administrator privileges</sys:String>
+
+  <!-- 3D settings page -->
+  <sys:String x:Key="page.3dSettings.title">Manage 3D Settings</sys:String>
+  <sys:String x:Key="page.3dSettings.tabGlobal">Global Settings</sys:String>
+  <sys:String x:Key="page.3dSettings.tabProgram">Program Settings</sys:String>
+  <sys:String x:Key="d3.antiLag">Radeon Anti-Lag</sys:String>
+  <sys:String x:Key="d3.chill">Radeon Chill</sys:String>
+  <sys:String x:Key="d3.chillMinFps">Chill Min FPS</sys:String>
+  <sys:String x:Key="d3.chillMaxFps">Chill Max FPS</sys:String>
+  <sys:String x:Key="d3.imageSharpening">Radeon Image Sharpening</sys:String>
+  <sys:String x:Key="d3.sharpness">Sharpness</sys:String>
+  <sys:String x:Key="d3.boost">Radeon Boost</sys:String>
+  <sys:String x:Key="d3.vsync">Vertical Refresh (V-Sync)</sys:String>
+  <sys:String x:Key="d3.aniso">Anisotropic Filtering</sys:String>
+  <sys:String x:Key="d3.tessellation">Tessellation Level</sys:String>
+  <sys:String x:Key="d3.unsupported">Not supported by hardware</sys:String>
+
+  <!-- Resolution page -->
+  <sys:String x:Key="page.resolution.title">Change Resolution</sys:String>
+  <sys:String x:Key="res.monitor">Monitor</sys:String>
+  <sys:String x:Key="res.resolution">Resolution</sys:String>
+  <sys:String x:Key="res.refreshRate">Refresh Rate (Hz)</sys:String>
+  <sys:String x:Key="res.colorDepth">Color Depth (bpc)</sys:String>
+  <sys:String x:Key="res.pixelFormat">Pixel Format</sys:String>
+  <sys:String x:Key="res.bandwidthWarning">⚠ This combination exceeds the bandwidth of the active port ({0}). Use at your own risk - black screen possible.</sys:String>
+
+  <!-- Color page -->
+  <sys:String x:Key="page.color.title">Desktop Color Settings</sys:String>
+  <sys:String x:Key="color.brightness">Brightness</sys:String>
+  <sys:String x:Key="color.contrast">Contrast</sys:String>
+  <sys:String x:Key="color.gamma">Gamma</sys:String>
+  <sys:String x:Key="color.saturation">Saturation (Digital Vibrance)</sys:String>
+  <sys:String x:Key="color.reset">Reset to Default</sys:String>
+
+  <!-- FreeSync page -->
+  <sys:String x:Key="page.freesync.title">AMD FreeSync</sys:String>
+  <sys:String x:Key="fs.enable">Enable FreeSync</sys:String>
+  <sys:String x:Key="fs.range">Supported refresh range</sys:String>
+  <sys:String x:Key="fs.notSupported">FreeSync is not supported by this monitor or port.</sys:String>
+
+  <!-- Scaling page -->
+  <sys:String x:Key="page.scaling.title">Desktop Scaling</sys:String>
+  <sys:String x:Key="scaling.mode">Scaling Mode</sys:String>
+  <sys:String x:Key="scaling.fullscreen">Full Screen</sys:String>
+  <sys:String x:Key="scaling.aspectRatio">Aspect Ratio</sys:String>
+  <sys:String x:Key="scaling.noScaling">No Scaling</sys:String>
+  <sys:String x:Key="scaling.centered">Centered</sys:String>
+  <sys:String x:Key="scaling.device">Scaling Device</sys:String>
+  <sys:String x:Key="scalingDevice.gpu">GPU</sys:String>
+  <sys:String x:Key="scalingDevice.display">Display</sys:String>
+
+  <!-- Driver manager page -->
+  <sys:String x:Key="page.driverManager.title">Driver Manager</sys:String>
+  <sys:String x:Key="drv.currentGpu">Current GPU</sys:String>
+  <sys:String x:Key="drv.driverVersion">Driver Version</sys:String>
+  <sys:String x:Key="drv.adlxVersion">ADLX SDK Version</sys:String>
+  <sys:String x:Key="drv.installMode">Installation Mode</sys:String>
+  <sys:String x:Key="drv.registryPath">Registry Path</sys:String>
+  <sys:String x:Key="drv.sourceFile">Source .exe / .inf file</sys:String>
+  <sys:String x:Key="drv.installLog">Installation Log</sys:String>
+
+  <!-- Performance page -->
+  <sys:String x:Key="page.performance.title">Performance Monitoring</sys:String>
+  <sys:String x:Key="perf.temperature">GPU Temperature (°C)</sys:String>
+  <sys:String x:Key="perf.usage">GPU Usage (%)</sys:String>
+  <sys:String x:Key="perf.gpuClock">GPU Clock (MHz)</sys:String>
+  <sys:String x:Key="perf.vramClock">VRAM Clock (MHz)</sys:String>
+  <sys:String x:Key="perf.fanRpm">Fan Speed (RPM)</sys:String>
+  <sys:String x:Key="perf.power">Power Draw (W)</sys:String>
+
+  <!-- Watchdog dialog -->
+  <sys:String x:Key="watchdog.title">Keep these display settings?</sys:String>
+  <sys:String x:Key="watchdog.message">If you don't respond within {0} seconds, the previous settings will be restored automatically.</sys:String>
+  <sys:String x:Key="watchdog.previous">Previous</sys:String>
+  <sys:String x:Key="watchdog.new">New</sys:String>
+  <sys:String x:Key="watchdog.yes">Yes</sys:String>
+  <sys:String x:Key="watchdog.no">No</sys:String>
+
+  <!-- Status bar -->
+  <sys:String x:Key="status.applied">Settings applied</sys:String>
+  <sys:String x:Key="status.cancelled">Changes cancelled</sys:String>
+  <sys:String x:Key="status.scanning">Scanning hardware…</sys:String>
+  <sys:String x:Key="status.scanComplete">Hardware scan complete</sys:String>
+  <sys:String x:Key="status.resolutionApplied">Resolution applied</sys:String>
+  <sys:String x:Key="status.colorApplied">Color settings applied</sys:String>
+  <sys:String x:Key="status.freesyncApplied">FreeSync setting applied</sys:String>
+  <sys:String x:Key="status.scalingApplied">Scaling setting applied</sys:String>
+  <sys:String x:Key="status.d3Applied">3D settings applied</sys:String>
+  <sys:String x:Key="status.watchdogReverted">Reverted automatically after {0} seconds</sys:String>
+  <sys:String x:Key="status.selectDriverFile">Select a driver file first</sys:String>
+</ResourceDictionary>
