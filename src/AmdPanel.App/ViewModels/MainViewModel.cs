@@ -273,12 +273,16 @@ public sealed class MainViewModel : ViewModelBase
                 Key = "nav.display.color",
                 PageKey = "page.color"
             });
-            if (disp.FreeSyncSupported)
-                dispNode.Children.Add(new NavigationNode
-                {
-                    Key = "nav.display.freesync",
-                    PageKey = "page.freesync"
-                });
+            // v1.0.1: FreeSync node всегда виден в дереве навигации (Requirement 4).
+            // Раньше скрывался если disp.FreeSyncSupported == false, но пользователь
+            // не мог понять, почему пункта нет. Теперь пункт всегда присутствует,
+            // а статус поддержки (supported / not supported) показывается внутри
+            // самой страницы через FreeSyncPageViewModel.IsAvailable и XAML warning.
+            dispNode.Children.Add(new NavigationNode
+            {
+                Key = "nav.display.freesync",
+                PageKey = "page.freesync"
+            });
             if (disp.GpuScalingSupported)
                 dispNode.Children.Add(new NavigationNode
                 {

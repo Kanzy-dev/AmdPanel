@@ -19,4 +19,5 @@ EXPORTS
     ADLXBridge_SetDisplayPixelFormat
     ADLXBridge_GetDisplayColorDepth
     ADLXBridge_SetDisplayColorDepth
+    ADLXBridge_GetGpuMetrics
     ADLXBridge_FreeBuffer

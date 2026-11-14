@@ -134,8 +134,19 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
     {
         RefreshRates.Clear();
         if (SelectedResolution is null) return;
+
+        // v1.0.1: Сначала пробуем ADLX GetRefreshRates; если он вернул пустой
+        // массив (Polaris/RDNA могут не отдавать список через ADLX), fallback
+        // на Win32 EnumDisplaySettings - перебираем все режимы DEVMODE и
+        // фильтруем по совпадению разрешения (width × height), собираем unique Hz.
         var hz = _hub.Scanner.GetRefreshRates(_display.Index, SelectedResolution.Width, SelectedResolution.Height);
-        foreach (var v in hz.OrderByDescending(x => x)) RefreshRates.Add(v);
+        if (hz is null || hz.Length == 0)
+        {
+            hz = EnumerateRefreshRatesViaWin32(_display.DisplayName,
+                SelectedResolution.Width, SelectedResolution.Height);
+        }
+        foreach (var v in hz.Distinct().OrderByDescending(x => x)) RefreshRates.Add(v);
+
         // SelectedRefresh — int (не nullable), поэтому используем Contains() вместо
         // FirstOrDefault(...) ?? fallback — оператор ?? не применим к int.
         SelectedRefresh = RefreshRates.Contains(_display.CurrentRefreshHz)
@@ -149,6 +160,40 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
             ColorDepths.Add(10);
         SelectedBpc = ColorDepths.Contains(10) && (int)_display.CurrentColorDepth >= (int)ColorDepthBits.Bpp10
             ? 10 : 8;
+    }
+
+    /// <summary>
+    /// v1.0.1: Win32 fallback для перечисления поддерживаемых герцовок.
+    /// ADLX на Polaris (RX 580) может возвращать пустой список Hz для разрешения
+    /// через GetRefreshRates - в этом случае используем EnumDisplaySettings,
+    /// который перебирает все зарегистрированные в Windows режимы DEVMODE и
+    /// фильтрует по совпадению width × height. Возвращает distinct Hz значения,
+    /// включая 60/75/120/144 Гц для мониторов типа 24N3Q.
+    /// </summary>
+    private static int[] EnumerateRefreshRatesViaWin32(string deviceName, int targetWidth, int targetHeight)
+    {
+        if (string.IsNullOrEmpty(deviceName)) return Array.Empty<int>();
+        var result = new HashSet<int>();
+        // Перебираем iModeNum от 0 до тех пор, пока EnumDisplaySettings не вернёт false
+        for (int modeNum = 0; modeNum < 1024; modeNum++)
+        {
+            try
+            {
+                var dm = new AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE
+                {
+                    dmSize = (short)System.Runtime.InteropServices.Marshal.SizeOf<AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE>()
+                };
+                if (!AmdPanel.Core.Hardware.Win32.User32Display.EnumDisplaySettings(deviceName, modeNum, ref dm))
+                    break;  // конец списка режимов
+                if (dm.dmPelsWidth == targetWidth && dm.dmPelsHeight == targetHeight)
+                {
+                    if (dm.dmDisplayFrequency > 0)
+                        result.Add(dm.dmDisplayFrequency);
+                }
+            }
+            catch { break; }
+        }
+        return result.ToArray();
     }
 
     /// <summary>

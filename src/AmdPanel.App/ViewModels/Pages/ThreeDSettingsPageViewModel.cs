@@ -37,6 +37,23 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         _profileService = profileService;
         _globalProfile = globalProfile;
 
+        // v1.0.1: Синхронизация с уже активными настройками AMD Adrenalin.
+        // Инициализируем поля VM значениями IsEnabled() / GetSharpness() / GetMinFPS()
+        // / GetMaxFPS(), прочитанными в bridge.cpp → HardwareScanner → GpuCapabilities.
+        // Без этого UI показывал бы дефолтные false/50/72/144 вместо актуальных.
+        // Внимание: используем прямое присваивание полей (не SetField), чтобы НЕ
+        // помечать VM как Dirty при инициализации - иначе кнопка Apply активируется
+        // сразу при открытии вкладки, без реального изменения пользователем.
+        _antiLag      = caps.AntiLagEnabled;
+        _chill        = caps.ChillEnabled;
+        _chillMinFps  = caps.ChillMinFps > 0 ? caps.ChillMinFps : 72;
+        _chillMaxFps  = caps.ChillMaxFps > 0 ? caps.ChillMaxFps : 144;
+        _imageSharpen = caps.ImageSharpeningEnabled;
+        _sharpness    = caps.ImageSharpeningSharpness >= 0 ? caps.ImageSharpeningSharpness : 50;
+        _boost        = caps.BoostEnabled;
+        // WaitForVerticalRefreshEnabled: 0=Off, 1=UnlessAppSpecifies, 2=On (трактуем как VSyncMode)
+        _vSyncMode    = caps.WaitForVerticalRefreshEnabled ? 1 : 0;
+
         // Загрузить список программных профилей
         if (_globalProfile is not null)
         {

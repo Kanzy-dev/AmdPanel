@@ -22,7 +22,19 @@ public sealed class DisplayColorPageViewModel : ViewModelBase, IPageViewModel
     {
         _hub = hub;
         _display = display;
-        Brightness = 50; Contrast = 50; Gamma = 100; Saturation = 50;
+
+        // v1.0.1: Синхронизация с текущими значениями CustomColor из AMD Adrenalin.
+        // ADLX через IADLXDisplayCustomColor отдаёт текущие Brightness/Contrast/Saturation,
+        // прочитанные в bridge.cpp → HardwareScanner → DisplayInfo.
+        // Если не поддерживается (CustomColorBrightness == -1) - дефолты 50/50/100/50.
+        // Прямое присваивание полям (не SetField) чтобы не помечать VM как Dirty.
+        _brightness = display.CustomColorSupported && display.CustomColorBrightness >= 0
+                      ? display.CustomColorBrightness : 50;
+        _contrast   = display.CustomColorSupported && display.CustomColorContrast >= 0
+                      ? display.CustomColorContrast : 50;
+        _gamma      = 100;  // Gamma в ADLX CustomColor нет отдельного - оставляем 100
+        _saturation = display.CustomColorSupported && display.CustomColorSaturation >= 0
+                      ? display.CustomColorSaturation : 50;
     }
 
     public bool IsAvailable => _display.Connected;

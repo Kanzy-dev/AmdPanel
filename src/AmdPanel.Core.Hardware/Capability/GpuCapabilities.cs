@@ -64,6 +64,24 @@ public sealed class GpuCapabilities
     public bool SmartAccessMemory{ get; init; }
     public bool PerformanceMonitoring { get; init; }
 
+    // === v1.0.1: Текущие значения (sync с AMD Adrenalin) ===
+    // Эти поля заполняются при FromBridge() из значений, прочитанных через
+    // IsEnabled() / GetSharpness() / GetMinFPS() / GetMaxFPS() в bridge.cpp.
+    // Используются ViewModel'ями для инициализации UI фактическими значениями.
+    public bool AntiLagEnabled                  { get; init; }
+    public bool ChillEnabled                    { get; init; }
+    public int  ChillMinFps                     { get; init; } = -1;
+    public int  ChillMaxFps                     { get; init; } = -1;
+    public bool ImageSharpeningEnabled          { get; init; }
+    public int  ImageSharpeningSharpness        { get; init; } = -1;
+    public bool BoostEnabled                    { get; init; }
+    public bool EnhancedSyncEnabled             { get; init; }
+    public bool WaitForVerticalRefreshEnabled   { get; init; }
+    public bool FrameRateTargetEnabled          { get; init; }
+    public bool MorphologicalAAEnabled          { get; init; }
+    public bool AnisotropicEnabled              { get; init; }
+    public bool TessellationEnabled             { get; init; }
+
     public static GpuCapabilities FromBridge(Native.BridgeGpuCapabilities c) => new()
     {
         Index                    = c.Index,
@@ -88,6 +106,66 @@ public sealed class GpuCapabilities
         PresetTuning             = c.PresetTuningSupported     == 1,
         SmartAccessMemory        = c.SmartAccessMemorySupported== 1,
         PerformanceMonitoring    = c.PerformanceMonitoringSupported == 1,
+
+        // v1.0.1: текущие значения
+        AntiLagEnabled                = c.AntiLagEnabled == 1,
+        ChillEnabled                  = c.ChillEnabled == 1,
+        ChillMinFps                   = c.ChillMinFps,
+        ChillMaxFps                   = c.ChillMaxFps,
+        ImageSharpeningEnabled        = c.ImageSharpeningEnabled == 1,
+        ImageSharpeningSharpness      = c.ImageSharpeningSharpness,
+        BoostEnabled                  = c.BoostEnabled == 1,
+        EnhancedSyncEnabled           = c.EnhancedSyncEnabled == 1,
+        WaitForVerticalRefreshEnabled = c.WaitForVerticalRefreshEnabled == 1,
+        FrameRateTargetEnabled        = c.FrameRateTargetEnabled == 1,
+        MorphologicalAAEnabled        = c.MorphologicalAntiAliasingEnabled == 1,
+        AnisotropicEnabled            = c.AnisotropicFilteringEnabled == 1,
+        TessellationEnabled           = c.TessellationEnabled == 1,
+    };
+}
+
+/// <summary>
+/// v1.0.1: Метрики GPU в реальном времени для вкладки Performance.
+/// </summary>
+public sealed class GpuMetrics
+{
+    public int     Index { get; init; }
+    public double  GpuTemperature { get; init; }
+    public double  GpuUsage { get; init; }
+    public int     GpuClockMHz { get; init; }
+    public int     VramClockMHz { get; init; }
+    public int     FanSpeedRpm { get; init; }
+    public double  PowerDrawWatts { get; init; }
+    public double  TotalBoardPower { get; init; }
+    public int     GpuVoltage { get; init; }
+    public bool TemperatureValid { get; init; }
+    public bool UsageValid { get; init; }
+    public bool ClockValid { get; init; }
+    public bool VramClockValid { get; init; }
+    public bool FanSpeedValid { get; init; }
+    public bool PowerValid { get; init; }
+    public bool TotalBoardPowerValid { get; init; }
+    public bool VoltageValid { get; init; }
+
+    public static GpuMetrics FromBridge(Native.BridgeGpuMetrics m) => new()
+    {
+        Index = m.Index,
+        GpuTemperature = m.GpuTemperature,
+        GpuUsage = m.GpuUsage,
+        GpuClockMHz = m.GpuClockMHz,
+        VramClockMHz = m.VramClockMHz,
+        FanSpeedRpm = m.FanSpeedRpm,
+        PowerDrawWatts = m.PowerDrawWatts,
+        TotalBoardPower = m.TotalBoardPower,
+        GpuVoltage = m.GpuVoltage,
+        TemperatureValid = m.TemperatureValid == 1,
+        UsageValid = m.UsageValid == 1,
+        ClockValid = m.ClockValid == 1,
+        VramClockValid = m.VramClockValid == 1,
+        FanSpeedValid = m.FanSpeedValid == 1,
+        PowerValid = m.PowerValid == 1,
+        TotalBoardPowerValid = m.TotalBoardPowerValid == 1,
+        VoltageValid = m.VoltageValid == 1,
     };
 }
 

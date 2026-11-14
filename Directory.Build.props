@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Directory.Build.props - применяется ко всем C# проектам в src/.
-  Здесь фиксируются общие настройки релизной версии 1.0.0 и copyright,
+  Здесь фиксируются общие настройки релизной версии 1.0.1 и copyright,
   которые автоматически наследуются всеми .csproj в репозитории.
 -->
 <Project>
 
   <PropertyGroup>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <InformationalVersion>1.0.0</InformationalVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <InformationalVersion>1.0.1</InformationalVersion>
     <Company>AmdPanel</Company>
     <Product>AmdPanel</Product>
     <Copyright>Copyright (c) 2026 AmdPanel contributors</Copyright>

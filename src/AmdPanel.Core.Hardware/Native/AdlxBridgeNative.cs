@@ -83,6 +83,10 @@ internal static class AdlxBridgeNative
     [DllImport(DllName, CallingConvention = Cc)]
     public static extern int ADLXBridge_SetDisplayColorDepth(int displayIndex, int newDepth);
 
+    // v1.0.1: Performance metrics
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetGpuMetrics(int gpuIndex, out BridgeGpuMetrics outMetrics);
+
     [DllImport(DllName, CallingConvention = Cc)]
     public static extern void ADLXBridge_FreeBuffer(IntPtr buffer);
 

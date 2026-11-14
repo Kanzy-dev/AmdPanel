@@ -180,6 +180,13 @@ public sealed class HardwareScanner
                 FreeSyncMaxHz      = raw.FreeSyncMaxHz,
                 GpuScalingSupported = raw.GpuScalingSupported == 1,
                 GpuScalingEnabled  = raw.GpuScalingEnabled == 1,
+
+                // v1.0.1: Custom Color
+                CustomColorSupported  = raw.CustomColorSupported == 1,
+                CustomColorBrightness = raw.CustomColorBrightness,
+                CustomColorContrast   = raw.CustomColorContrast,
+                CustomColorSaturation = raw.CustomColorSaturation,
+                CustomColorHue        = raw.CustomColorHue,
             };
             snapshot.Displays.Add(info);
         }
@@ -281,6 +288,20 @@ public sealed class HardwareScanner
         {
             AdlxBridgeNative.ADLXBridge_FreeBuffer(hzPtr);
         }
+    }
+
+    /// <summary>
+    /// v1.0.1: Читает текущие метрики GPU (температура, частота, usage, fan RPM, power).
+    /// Используется PerformancePageViewModel для polling'а раз в секунду через
+    /// DispatcherTimer. На Polaris (RX 580) доступны все основные метрики; на RDNA
+    /// дополнительно доступен GPUVoltage.
+    /// </summary>
+    public GpuMetrics GetGpuMetrics(int gpuIndex)
+    {
+        int rc = AdlxBridgeNative.ADLXBridge_GetGpuMetrics(gpuIndex, out Native.BridgeGpuMetrics raw);
+        if (rc != AdlxBridgeNative.BRIDGE_OK)
+            return new GpuMetrics { Index = gpuIndex };
+        return GpuMetrics.FromBridge(raw);
     }
 
     /// <summary>

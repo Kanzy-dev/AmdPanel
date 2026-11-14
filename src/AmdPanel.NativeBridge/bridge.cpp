@@ -397,55 +397,91 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCapabilities(int32_t 
     {
         adlx_bool b = false;
 
-        // AntiLag
+        // AntiLag - чтение IsSupported + IsEnabled (sync с AMD Adrenalin)
         IADLX3DAntiLagPtr antiLag;
         if (ADLX_OK == d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) && antiLag)
+        {
             if (ADLX_OK == antiLag->IsSupported(&b)) outCaps->antiLagSupported = b ? 1 : 0;
+            if (ADLX_OK == antiLag->IsEnabled(&b))   outCaps->antiLagEnabled   = b ? 1 : 0;
+        }
 
-        // Chill
+        // Chill - IsSupported + IsEnabled + GetMinFPS + GetMaxFPS
         IADLX3DChillPtr chill;
         if (ADLX_OK == d3dSvc->GetChill(gpu.GetPtr(), &chill) && chill)
+        {
             if (ADLX_OK == chill->IsSupported(&b)) outCaps->chillSupported = b ? 1 : 0;
+            if (ADLX_OK == chill->IsEnabled(&b))   outCaps->chillEnabled   = b ? 1 : 0;
+            adlx_int minFps = 0, maxFps = 0;
+            if (ADLX_OK == chill->GetMinFPS(&minFps)) outCaps->chillMinFps = (int32_t)minFps;
+            if (ADLX_OK == chill->GetMaxFPS(&maxFps)) outCaps->chillMaxFps = (int32_t)maxFps;
+        }
 
-        // Boost
+        // Boost - IsSupported + IsEnabled
         IADLX3DBoostPtr boost;
         if (ADLX_OK == d3dSvc->GetBoost(gpu.GetPtr(), &boost) && boost)
+        {
             if (ADLX_OK == boost->IsSupported(&b)) outCaps->boostSupported = b ? 1 : 0;
+            if (ADLX_OK == boost->IsEnabled(&b))   outCaps->boostEnabled   = b ? 1 : 0;
+        }
 
-        // Image Sharpening
+        // Image Sharpening - IsSupported + IsEnabled + GetSharpness
         IADLX3DImageSharpeningPtr imgSharp;
         if (ADLX_OK == d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) && imgSharp)
+        {
             if (ADLX_OK == imgSharp->IsSupported(&b)) outCaps->imageSharpeningSupported = b ? 1 : 0;
+            if (ADLX_OK == imgSharp->IsEnabled(&b))   outCaps->imageSharpeningEnabled   = b ? 1 : 0;
+            adlx_int sharpness = 0;
+            if (ADLX_OK == imgSharp->GetSharpness(&sharpness))
+                outCaps->imageSharpeningSharpness = (int32_t)sharpness;
+        }
 
-        // EnhancedSync
+        // EnhancedSync - IsSupported + IsEnabled
         IADLX3DEnhancedSyncPtr eSync;
         if (ADLX_OK == d3dSvc->GetEnhancedSync(gpu.GetPtr(), &eSync) && eSync)
+        {
             if (ADLX_OK == eSync->IsSupported(&b)) outCaps->enhancedSyncSupported = b ? 1 : 0;
+            if (ADLX_OK == eSync->IsEnabled(&b))   outCaps->enhancedSyncEnabled   = b ? 1 : 0;
+        }
 
-        // WaitForVerticalRefresh
+        // WaitForVerticalRefresh - IsSupported + IsEnabled
         IADLX3DWaitForVerticalRefreshPtr wvRefresh;
         if (ADLX_OK == d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &wvRefresh) && wvRefresh)
+        {
             if (ADLX_OK == wvRefresh->IsSupported(&b)) outCaps->waitForVerticalRefreshSupported = b ? 1 : 0;
+            if (ADLX_OK == wvRefresh->IsEnabled(&b))   outCaps->waitForVerticalRefreshEnabled   = b ? 1 : 0;
+        }
 
-        // FrameRateTargetControl
+        // FrameRateTargetControl - IsSupported + IsEnabled
         IADLX3DFrameRateTargetControlPtr frtc;
         if (ADLX_OK == d3dSvc->GetFrameRateTargetControl(gpu.GetPtr(), &frtc) && frtc)
+        {
             if (ADLX_OK == frtc->IsSupported(&b)) outCaps->frameRateTargetSupported = b ? 1 : 0;
+            if (ADLX_OK == frtc->IsEnabled(&b))   outCaps->frameRateTargetEnabled   = b ? 1 : 0;
+        }
 
-        // MorphologicalAntiAliasing
+        // MorphologicalAntiAliasing - IsSupported + IsEnabled
         IADLX3DMorphologicalAntiAliasingPtr morphAA;
         if (ADLX_OK == d3dSvc->GetMorphologicalAntiAliasing(gpu.GetPtr(), &morphAA) && morphAA)
+        {
             if (ADLX_OK == morphAA->IsSupported(&b)) outCaps->morphologicalAntiAliasingSupported = b ? 1 : 0;
+            if (ADLX_OK == morphAA->IsEnabled(&b))   outCaps->morphologicalAntiAliasingEnabled   = b ? 1 : 0;
+        }
 
-        // AnisotropicFiltering
+        // AnisotropicFiltering - IsSupported + IsEnabled (значениеlevel берём из GetValue если есть)
         IADLX3DAnisotropicFilteringPtr aniso;
         if (ADLX_OK == d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) && aniso)
+        {
             if (ADLX_OK == aniso->IsSupported(&b)) outCaps->anisotropicFilteringSupported = b ? 1 : 0;
+            if (ADLX_OK == aniso->IsEnabled(&b))   outCaps->anisotropicFilteringEnabled   = b ? 1 : 0;
+        }
 
-        // Tessellation
+        // Tessellation - IsSupported + IsEnabled
         IADLX3DTessellationPtr tess;
         if (ADLX_OK == d3dSvc->GetTessellation(gpu.GetPtr(), &tess) && tess)
+        {
             if (ADLX_OK == tess->IsSupported(&b)) outCaps->tessellationSupported = b ? 1 : 0;
+            if (ADLX_OK == tess->IsEnabled(&b))   outCaps->tessellationEnabled   = b ? 1 : 0;
+        }
     }
 
     //--- GPU Tuning Services ---
@@ -801,6 +837,30 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayInfo(int32_t disp
             outInfo->currentPixelFormat = (int32_t)pf;
     }
 
+    //--- v1.0.1: Custom Color (Brightness / Contrast / Saturation / Hue) ---
+    // Читаем текущие значения из AMD Adrenalin, чтобы DisplayColorPageViewModel
+    // при инициализации показывала реальные значения, а не дефолтные 50/50/100/50.
+    IADLXDisplayCustomColorPtr customColor;
+    if (ADLX_OK == dispSvc->GetCustomColor(disp.GetPtr(), &customColor) && customColor)
+    {
+        adlx_bool sup = false;
+        if (ADLX_OK == customColor->IsSupported(&sup))
+            outInfo->customColorSupported = sup ? 1 : 0;
+
+        if (sup)
+        {
+            adlx_int v = 0;
+            if (ADLX_OK == customColor->GetBrightness(&v))
+                outInfo->customColorBrightness = (int32_t)v;
+            if (ADLX_OK == customColor->GetContrast(&v))
+                outInfo->customColorContrast = (int32_t)v;
+            if (ADLX_OK == customColor->GetSaturation(&v))
+                outInfo->customColorSaturation = (int32_t)v;
+            if (ADLX_OK == customColor->GetHue(&v))
+                outInfo->customColorHue = (int32_t)v;
+        }
+    }
+
     // Primary display - через IADLXDisplay метод IsExternal не подходит.
     // ADLX не отдаёт "IsPrimary" напрямую на базовом IADLXDisplay; для Stage 1
     // оставляем 0 - UI сам определит primary через Win32 EnumDisplayDevices.
@@ -1024,6 +1084,94 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayColorDepth(int32_
     if (ADLX_OK != dispSvc->GetColorDepth(disp.GetPtr(), &cd) || !cd) return BRIDGE_INTERFACE_UNSUPPORTED;
     ADLX_RESULT res = cd->SetValue((ADLX_COLOR_DEPTH)newDepth);
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
+}
+
+//=========================================================================
+// v1.0.1: GPU Performance Metrics (для вкладки Performance Monitoring)
+//=========================================================================
+// Читает текущие метрики GPU через IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics.
+// На Polaris (RX 580) доступны: GPUUsage, GPUClockSpeed, GPUVRAMClockSpeed,
+// GPUTemperature, GPUFanSpeed, GPUPower. GPUTotalBoardPower и GPUVoltage
+// могут быть недоступны - в этом случае соответствующий *Valid = 0.
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIndex, BridgeGpuMetrics* outMetrics)
+{
+    if (!outMetrics) return BRIDGE_INVALID_ARGS;
+    memset(outMetrics, 0, sizeof(BridgeGpuMetrics));
+    outMetrics->index = gpuIndex;
+    // Инициализируем все *Valid = 0 (поля уже нули после memset)
+    // Значения метрик останутся 0 если не удалось прочитать
+
+    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
+
+    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
+    if (!sys) return BRIDGE_FAIL;
+
+    // Получаем GPU по индексу
+    IADLXGPUListPtr gpuList;
+    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
+    adlx_uint cnt = gpuList->Size();
+    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
+    IADLXGPUPtr gpu;
+    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
+
+    // Получаем PerformanceMonitoringServices
+    IADLXPerformanceMonitoringServicesPtr perfSvc;
+    if (ADLX_OK != sys->GetPerformanceMonitoringServices(&perfSvc) || !perfSvc)
+        return BRIDGE_INTERFACE_UNSUPPORTED;
+
+    // GetCurrentGPUMetrics возвращает снапшот текущих значений
+    IADLXGPUMetricsPtr metrics;
+    if (ADLX_OK != perfSvc->GetCurrentGPUMetrics(gpu.GetPtr(), &metrics) || !metrics)
+        return BRIDGE_FAIL;
+
+    // Читаем каждое поле по отдельности; каждое имеет свой *Valid флаг,
+    // потому что на разных GPU доступны разные метрики (Polaris не отдаёт
+    // GPUVoltage, RDNA отдаёт)
+    adlx_double dVal = 0.0;
+    adlx_int    iVal = 0;
+
+    if (ADLX_OK == metrics->GPUTemperature(&dVal))
+    {
+        outMetrics->gpuTemperature = dVal;
+        outMetrics->temperatureValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUUsage(&dVal))
+    {
+        outMetrics->gpuUsage = dVal;
+        outMetrics->usageValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUClockSpeed(&iVal))
+    {
+        outMetrics->gpuClockMHz = (int32_t)iVal;
+        outMetrics->clockValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUVRAMClockSpeed(&iVal))
+    {
+        outMetrics->vramClockMHz = (int32_t)iVal;
+        outMetrics->vramClockValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUFanSpeed(&iVal))
+    {
+        outMetrics->fanSpeedRpm = (int32_t)iVal;
+        outMetrics->fanSpeedValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUPower(&dVal))
+    {
+        outMetrics->powerDrawWatts = dVal;
+        outMetrics->powerValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUTotalBoardPower(&dVal))
+    {
+        outMetrics->totalBoardPower = dVal;
+        outMetrics->totalBoardPowerValid = 1;
+    }
+    if (ADLX_OK == metrics->GPUVoltage(&iVal))
+    {
+        outMetrics->gpuVoltage = (int32_t)iVal;
+        outMetrics->voltageValid = 1;
+    }
+
+    return BRIDGE_OK;
 }
 
 //=========================================================================

@@ -32,6 +32,15 @@ public sealed class DisplayInfo
 
     public bool GpuScalingSupported { get; init; }
     public bool GpuScalingEnabled { get; init; }
+
+    // === v1.0.1: Custom Color (Brightness / Contrast / Saturation / Hue) ===
+    // Текущие значения из AMD Adrenalin - используются DisplayColorPageViewModel
+    // для инициализации слайдеров актуальными значениями драйвера.
+    public bool CustomColorSupported { get; init; }
+    public int  CustomColorBrightness { get; init; } = -1;
+    public int  CustomColorContrast { get; init; } = -1;
+    public int  CustomColorSaturation { get; init; } = -1;
+    public int  CustomColorHue { get; init; } = -1;
 }
 
 /// <summary> Один валидный режим: разрешение + герцовка + bpc. </summary>
