@@ -8,7 +8,7 @@ namespace AmdPanel.Core.Hardware.Win32;
 /// DEVMODE структуры и флаги. Используется для применения разрешения /
 /// герцовки / bpc с возможностью отката, и для прямой установки gamma ramp.
 /// </summary>
-internal static class User32Display
+public static class User32Display
 {
     // === Constants ===
     public const int ENUM_CURRENT_SETTINGS  = -1;
