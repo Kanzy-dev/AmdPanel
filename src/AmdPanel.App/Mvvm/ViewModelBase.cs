@@ -9,7 +9,7 @@ namespace AmdPanel.App.Mvvm;
 /// "Применить" / "Отмена" в MainWindow только когда пользователь реально
 /// изменил какой-то параметр.
 /// </summary>
-public abstract class ViewModelBase : INotifyPropertyChanged
+public abstract class ViewModelBase : INotifyPropertyChanged, IPageViewModel
 {
     private bool _isDirty;
 
@@ -67,4 +67,15 @@ public interface IPageViewModel
 {
     string PageKey { get; }       // уникальный ключ для локализации заголовка
     bool IsAvailable { get; }     // доступность страницы (зависит от железа)
+
+    /// <summary>
+    /// Событие поднимается при изменении IsDirty. MainWindow подписывается
+    /// и включает/выключает кнопки Apply / Cancel.
+    /// Объявлено в интерфейсе, чтобы MainViewModel мог подписаться без
+    /// приведения к ViewModelBase.
+    /// </summary>
+    event EventHandler<bool>? DirtyStateChanged;
+
+    /// <summary> Сброс Dirty (после Apply или Cancel). </summary>
+    void ClearDirty();
 }

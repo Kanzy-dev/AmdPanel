@@ -136,8 +136,11 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         if (SelectedResolution is null) return;
         var hz = _hub.Scanner.GetRefreshRates(_display.Index, SelectedResolution.Width, SelectedResolution.Height);
         foreach (var v in hz.OrderByDescending(x => x)) RefreshRates.Add(v);
-        SelectedRefresh = RefreshRates.FirstOrDefault(x => x == _display.CurrentRefreshHz)
-                          ?? RefreshRates.FirstOrDefault();
+        // SelectedRefresh — int (не nullable), поэтому используем Contains() вместо
+        // FirstOrDefault(...) ?? fallback — оператор ?? не применим к int.
+        SelectedRefresh = RefreshRates.Contains(_display.CurrentRefreshHz)
+                          ? _display.CurrentRefreshHz
+                          : RefreshRates.FirstOrDefault();
 
         // Bpc 10 доступен только для DisplayPort / HDMI 2.0+
         ColorDepths.Clear();

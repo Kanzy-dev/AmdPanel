@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Documents;
 using AmdPanel.App.Services;
 using AmdPanel.Core.Hardware;
 

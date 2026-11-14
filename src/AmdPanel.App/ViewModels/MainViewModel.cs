@@ -89,7 +89,7 @@ public sealed class MainViewModel : ViewModelBase
     public ViewModelBase? ActivePage
     {
         get => _activePage;
-        private set
+        set
         {
             if (_activePage is IPageViewModel oldPage)
             {
@@ -174,7 +174,9 @@ public sealed class MainViewModel : ViewModelBase
                 case ScalingPageViewModel sc:
                     _globalProfile.Scaling = new ScalingProfile
                     {
-                        ScalingMode = (int)(sc.SelectedScalingMode?.Mode ?? Capability.ScalingMode.AspectRatio),
+                        // ScalingMode — enum из AmdPanel.Core.Hardware.Capability,
+                        // using уже добавлен, обращаемся напрямую без префикса Capability.
+                        ScalingMode = (int)(sc.SelectedScalingMode?.Mode ?? ScalingMode.AspectRatio),
                         ScalingDevice = sc.SelectedScalingDevice
                     };
                     _profileService.Save(_globalProfile);
