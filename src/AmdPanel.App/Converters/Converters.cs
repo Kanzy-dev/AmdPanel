@@ -76,3 +76,44 @@ public sealed class NullToBoolConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
+
+/// <summary>
+/// Converter: ключ строки интерфейса (например "nav.3dSettings") → локализованный текст.
+/// Используется в HierarchicalDataTemplate для отображения названий навигационных
+/// узлов и в Program Settings для локализации меток.
+/// Реализация через DynamicResource lookup в Application.Current.Resources.
+/// </summary>
+public sealed class NavKeyToTextConverter : IValueConverter
+{
+    public static readonly NavKeyToTextConverter Instance = new();
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not string key || string.IsNullOrEmpty(key)) return string.Empty;
+        var found = System.Windows.Application.Current?.TryFindResource(key);
+        return found as string ?? key;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>
+/// Converter: bool IsDriverOnly → "Driver-Only (recommended)" / "Adrenalin (full)".
+/// Используется в DriverManagerPageView для отображения текста режима установки.
+/// </summary>
+public sealed class DriverModeLabelConverter : IValueConverter
+{
+    public static readonly DriverModeLabelConverter Instance = new();
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        bool isDriverOnly = value is bool b && b;
+        string key = isDriverOnly ? "header.driverOnly" : "header.adrenalinInstalled";
+        var found = System.Windows.Application.Current?.TryFindResource(key);
+        return found as string ?? (isDriverOnly ? "Driver-Only" : "Adrenalin");
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}

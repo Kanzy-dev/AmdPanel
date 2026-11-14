@@ -74,7 +74,7 @@
             <TextBlock Text="⚠" FontSize="16" Foreground="{StaticResource Brush.Warning}"
                        Margin="0,0,8,0" VerticalAlignment="Center"/>
             <TextBlock Style="{StaticResource Form.WarningText}" Margin="0">
-              <Run Text="{DynamicResource res.bandwidthWarning, Mode=OneWay}"/>
+              <Run Text="{DynamicResource res.bandwidthWarning}"/>
             </TextBlock>
           </StackPanel>
         </Border>

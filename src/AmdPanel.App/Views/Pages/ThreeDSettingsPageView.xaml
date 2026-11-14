@@ -1,7 +1,7 @@
 <UserControl x:Class="AmdPanel.App.Views.Pages.ThreeDSettingsPageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AmdPanel.App.ViewModels;assembly=AmdPanel"
+             xmlns:conv="clr-namespace:AmdPanel.App.Converters"
              Background="{StaticResource Brush.PanelBackground}">
   <DockPanel LastChildFill="True" Margin="16,12">
 
@@ -170,7 +170,7 @@
           </DockPanel>
 
           <!-- Правая колонка: редактор 3D-настроек выбранного приложения -->
-          <StackPanel VerticalAlignment="Top" IsEnabled="{Binding SelectedApplication, Converter={x:Static vm:NullToBoolConverter.Instance}}">
+          <StackPanel VerticalAlignment="Top" IsEnabled="{Binding SelectedApplication, Converter={x:Static conv:NullToBoolConverter.Instance}}">
             <TextBlock Style="{StaticResource Form.ValueLabel}" Margin="0,0,0,8"
                        Text="{Binding SelectedApplication.DisplayName, StringFormat='Editing: {0}'}"/>
 

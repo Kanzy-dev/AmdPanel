@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using AmdPanel.App.Services;
 using AmdPanel.App.ViewModels;
 using AmdPanel.Core.Hardware;
@@ -79,26 +78,4 @@ public partial class MainWindow : Window
         var dlg = new Views.AboutDialog(hub) { Owner = this };
         dlg.ShowDialog();
     }
-}
-
-/// <summary>
-/// Converter: ключ строки интерфейса (например "nav.3dSettings") → локализованный текст.
-/// Используется в HierarchicalDataTemplate для отображения названий навигационных узлов.
-/// Реализация через DynamicResource lookup в Application.Current.Resources.
-/// </summary>
-public sealed class NavKeyToTextConverter : IValueConverter
-{
-    public static readonly NavKeyToTextConverter Instance = new();
-
-    public object Convert(object value, Type targetType, object parameter,
-        System.Globalization.CultureInfo culture)
-    {
-        if (value is not string key || string.IsNullOrEmpty(key)) return string.Empty;
-        var found = Application.Current?.TryFindResource(key);
-        return found as string ?? key;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter,
-        System.Globalization.CultureInfo culture)
-        => throw new NotSupportedException();
 }

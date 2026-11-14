@@ -1,11 +1,10 @@
 <UserControl x:Class="AmdPanel.App.Views.Pages.DriverManagerPageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AmdPanel.App.ViewModels;assembly=AmdPanel"
-             xmlns:services="clr-namespace:AmdPanel.App.Services;assembly=AmdPanel"
+             xmlns:conv="clr-namespace:AmdPanel.App.Converters"
              Background="{StaticResource Brush.PanelBackground}">
   <UserControl.Resources>
-    <vm:NavKeyToTextConverter x:Key="Key2Text"/>
+    <conv:NavKeyToTextConverter x:Key="Key2Text"/>
   </UserControl.Resources>
   <DockPanel LastChildFill="True" Margin="16,12">
 
@@ -78,7 +77,7 @@
             <Run>
               <Run.Text>
                 <Binding Path="IsDriverOnly" Mode="OneWay"
-                         Converter="{x:Static vm:DriverModeLabelConverter.Instance}"/>
+                         Converter="{x:Static conv:DriverModeLabelConverter.Instance}"/>
               </Run.Text>
             </Run>
           </TextBlock>

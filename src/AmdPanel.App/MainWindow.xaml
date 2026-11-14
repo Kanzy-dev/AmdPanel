@@ -1,7 +1,8 @@
 <Window x:Class="AmdPanel.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:AmdPanel.App.ViewModels;assembly=AmdPanel"
+        xmlns:vm="clr-namespace:AmdPanel.App.ViewModels"
+        xmlns:conv="clr-namespace:AmdPanel.App.Converters"
         Title="{DynamicResource app.title}"
         Height="720" Width="1100" MinHeight="560" MinWidth="900"
         WindowStartupLocation="CenterScreen"
@@ -12,7 +13,7 @@
                               ItemsSource="{Binding Children}">
       <StackPanel Orientation="Horizontal">
         <TextBlock Style="{StaticResource Nav.PageLabel}"
-                   Text="{Binding Key, Converter={x:Static vm:NavKeyToTextConverter.Instance}}"/>
+                   Text="{Binding Key, Converter={x:Static conv:NavKeyToTextConverter.Instance}}"/>
       </StackPanel>
     </HierarchicalDataTemplate>
   </Window.Resources>
