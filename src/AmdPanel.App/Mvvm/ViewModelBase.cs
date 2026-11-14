@@ -11,6 +11,8 @@ namespace AmdPanel.App.Mvvm;
 /// </summary>
 public abstract class ViewModelBase : INotifyPropertyChanged, IPageViewModel
 {
+    public virtual string PageKey => string.Empty;
+    public virtual bool IsAvailable => true;
     private bool _isDirty;
 
     /// <summary> true, если есть несохранённые изменения в текущей VM. </summary>
