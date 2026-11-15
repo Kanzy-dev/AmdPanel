@@ -27,6 +27,7 @@
   <SolidColorBrush x:Key="Brush.HeaderBackground" Color="{StaticResource Color.HeaderBackground}"/>
   <SolidColorBrush x:Key="Brush.PanelBackground" Color="{StaticResource Color.PanelBackground}"/>
   <SolidColorBrush x:Key="Brush.TreeBackground" Color="{StaticResource Color.TreeBackground}"/>
+  <SolidColorBrush x:Key="Brush.Surface"          Color="#F5F6F7"/>       <!-- Light surface for control panels -->
   <SolidColorBrush x:Key="Brush.TextPrimary"     Color="{StaticResource Color.TextPrimary}"/>
   <SolidColorBrush x:Key="Brush.TextSecondary"   Color="{StaticResource Color.TextSecondary}"/>
   <SolidColorBrush x:Key="Brush.Accent"          Color="{StaticResource Color.Accent}"/>

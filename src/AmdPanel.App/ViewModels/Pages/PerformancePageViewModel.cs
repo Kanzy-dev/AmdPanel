@@ -66,23 +66,41 @@ public sealed class PerformancePageViewModel : ViewModelBase, IPageViewModel
 
     private void PollOnce()
     {
-        // На Stage 2 делаем безопасный non-ADLX запрос через реестр,
-        // чтобы не раздувать мост. На Stage 4 добавим IADLXPerformanceMonitoring.
+        // Stage 2: Реальный мониторинг через ADLX мост
         try
         {
-            // Затык-placeholder с реальным интерфейсом: читаем температуры из реестра
-            // HKLM\SYSTEM\...\Class\{GUID}\XXXX\0006\UMD - температура пишется драйвером
-            // в некоторых версиях. В противном случае показываем 0.
-            // Реализация через PerformanceMonitoring API будет в Stage 4.
-            GpuTemperature = ReadRegistryTemperature();
+            var metrics = _hub.Gpu.GetMetrics(_gpuIndex);
+            if (metrics.TemperatureValid)
+                GpuTemperature = metrics.GpuTemperature;
+            else
+                GpuTemperature = 0;
+
+            if (metrics.UsageValid)
+                GpuUsage = metrics.GpuUsage;
+            else
+                GpuUsage = 0;
+
+            if (metrics.ClockValid)
+                GpuClockMHz = metrics.GpuClockMHz;
+            else
+                GpuClockMHz = 0;
+
+            if (metrics.VramClockValid)
+                VramClockMHz = metrics.VramClockMHz;
+            else
+                VramClockMHz = 0;
+
+            if (metrics.FanSpeedValid)
+                FanRpm = metrics.FanSpeedRpm;
+            else
+                FanRpm = 0;
+
+            if (metrics.PowerValid)
+                PowerDrawWatts = metrics.PowerDrawWatts;
+            else
+                PowerDrawWatts = 0;
         }
         catch { /* ignore - страница опциональна */ }
-    }
-
-    private double ReadRegistryTemperature()
-    {
-        // Безопасный fallback: вернуть 0 до Stage 4
-        return 0;
     }
 }
 
