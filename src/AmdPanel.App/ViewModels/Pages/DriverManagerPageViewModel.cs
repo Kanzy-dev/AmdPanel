@@ -26,17 +26,37 @@ public sealed class DriverManagerPageViewModel : ViewModelBase, IPageViewModel
     public DriverManagerPageViewModel(UiHardwareHub hub)
     {
         _hub = hub;
-        RefreshStatus();
+        try
+        {
+            RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            // v1.1.0: Никогда не роняем приложение при открытии вкладки драйверов.
+            // AmdDriverDownloader ctor может выбросить FormatException если
+            // UserAgent парсер упадёт (теперь пофикшено через TryParseAdd, но
+            // defensive try/catch остаётся для надёжности).
+            InstallLog.Add($"[ERROR] Driver manager initialization failed: {ex.Message}");
+            System.Diagnostics.Trace.WriteLine($"[DriverManagerPageViewModel] init failed: {ex}");
+        }
     }
 
     /// <summary> Подключает реальный DriverManagerService. Вызывается из MainViewModel. </summary>
     public void BindService(DriverManagerService service)
     {
-        _service = service;
-        _service.ProgressChanged += OnProgressChanged;
-        _service.ScreenWillFlicker += OnScreenWillFlicker;
-        _service.RebootRequired += OnRebootRequired;
-        _service.BackupCreated += OnBackupCreated;
+        try
+        {
+            _service = service;
+            _service.ProgressChanged += OnProgressChanged;
+            _service.ScreenWillFlicker += OnScreenWillFlicker;
+            _service.RebootRequired += OnRebootRequired;
+            _service.BackupCreated += OnBackupCreated;
+        }
+        catch (Exception ex)
+        {
+            InstallLog.Add($"[ERROR] BindService failed: {ex.Message}");
+            System.Diagnostics.Trace.WriteLine($"[DriverManagerPageViewModel] BindService failed: {ex}");
+        }
     }
 
     public bool IsAvailable => true;

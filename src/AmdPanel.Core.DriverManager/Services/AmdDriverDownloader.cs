@@ -19,8 +19,18 @@ namespace AmdPanel.Core.DriverManager.Services;
 /// </remarks>
 public sealed class AmdDriverDownloader : IDisposable
 {
-    private static readonly ProductInfoHeaderValue s_userAgent =
-        new("Mozilla", "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+    /// <summary>
+    /// Полная строка браузерного User-Agent для обхода 403 от amd.com.
+    /// ВАЖНО: нельзя передавать её в конструктор new ProductInfoHeaderValue(name, value) -
+    /// парсер ProductInfoHeaderValue ожидает ИМЯ/ВЕРСИЮ без комментариев в скобках,
+    /// и полная строка вида "Mozilla/5.0 (Windows NT 10.0...) AppleWebKit/537.36 ..."
+    /// вызовет FormatException при конструировании (stack trace падает в
+    /// AmdDriverDownloader.cs:line 22 в ProductInfoHeaderValue..ctor).
+    /// Вместо этого используем UserAgent.ParseAdd / TryParseAdd, который
+    /// корректно разбирает UA на product tokens и comment-сегменты.
+    /// </summary>
+    private const string UserAgentString =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     private readonly HttpClient _httpClient;
     private bool _disposed;
@@ -44,15 +54,37 @@ public sealed class AmdDriverDownloader : IDisposable
             UseCookies = true,
             CookieContainer = new System.Net.CookieContainer(),
         });
-        client.DefaultRequestHeaders.UserAgent.Add(s_userAgent);
+
+        // v1.1.0 fix: используем TryParseAdd вместо конструктора ProductInfoHeaderValue.
+        // Конструктор new ProductInfoHeaderValue(name, version) не принимает UA с
+        // комментариями в скобках и крашит с FormatException. TryParseAdd корректно
+        // разбивает строку на product tokens: Mozilla/5.0 + (Windows NT...) +
+        // AppleWebKit/537.36 + ... + Safari/537.36.
+        if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(UserAgentString))
+        {
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0");
+        }
+
         // Referer обязателен - без него AMD отдаёт 403 на большинстве URL
-        client.DefaultRequestHeaders.Referrer = new Uri("https://amd.com");
-        client.DefaultRequestHeaders.AcceptLanguage.Add(
-            new StringWithQualityHeaderValue("en-US", 1.0));
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("text/html"));
+        try { client.DefaultRequestHeaders.Referrer = new Uri("https://amd.com"); }
+        catch (ArgumentException) { /* ignore */ }
+
+        try
+        {
+            client.DefaultRequestHeaders.AcceptLanguage.Add(
+                new StringWithQualityHeaderValue("en-US", 1.0));
+        }
+        catch (ArgumentException) { /* ignore */ }
+
+        try
+        {
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("text/html"));
+        }
+        catch (ArgumentException) { /* ignore */ }
+
         client.Timeout = TimeSpan.FromMinutes(15);
         return client;
     }
