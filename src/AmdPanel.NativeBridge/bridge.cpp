@@ -397,107 +397,55 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCapabilities(int32_t 
     {
         adlx_bool b = false;
 
-        // AntiLag - чтение IsSupported + IsEnabled (sync с AMD Adrenalin)
+        // AntiLag
         IADLX3DAntiLagPtr antiLag;
         if (ADLX_OK == d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) && antiLag)
-        {
             if (ADLX_OK == antiLag->IsSupported(&b)) outCaps->antiLagSupported = b ? 1 : 0;
-            if (ADLX_OK == antiLag->IsEnabled(&b))   outCaps->antiLagEnabled   = b ? 1 : 0;
-        }
 
-        // Chill - IsSupported + IsEnabled + GetMinFPS + GetMaxFPS
+        // Chill
         IADLX3DChillPtr chill;
         if (ADLX_OK == d3dSvc->GetChill(gpu.GetPtr(), &chill) && chill)
-        {
             if (ADLX_OK == chill->IsSupported(&b)) outCaps->chillSupported = b ? 1 : 0;
-            if (ADLX_OK == chill->IsEnabled(&b))   outCaps->chillEnabled   = b ? 1 : 0;
-            adlx_int minFps = 0, maxFps = 0;
-            if (ADLX_OK == chill->GetMinFPS(&minFps)) outCaps->chillMinFps = (int32_t)minFps;
-            if (ADLX_OK == chill->GetMaxFPS(&maxFps)) outCaps->chillMaxFps = (int32_t)maxFps;
-        }
 
-        // Boost - IsSupported + IsEnabled
+        // Boost
         IADLX3DBoostPtr boost;
         if (ADLX_OK == d3dSvc->GetBoost(gpu.GetPtr(), &boost) && boost)
-        {
             if (ADLX_OK == boost->IsSupported(&b)) outCaps->boostSupported = b ? 1 : 0;
-            if (ADLX_OK == boost->IsEnabled(&b))   outCaps->boostEnabled   = b ? 1 : 0;
-        }
 
-        // Image Sharpening - IsSupported + IsEnabled + GetSharpness
+        // Image Sharpening
         IADLX3DImageSharpeningPtr imgSharp;
         if (ADLX_OK == d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) && imgSharp)
-        {
             if (ADLX_OK == imgSharp->IsSupported(&b)) outCaps->imageSharpeningSupported = b ? 1 : 0;
-            if (ADLX_OK == imgSharp->IsEnabled(&b))   outCaps->imageSharpeningEnabled   = b ? 1 : 0;
-            adlx_int sharpness = 0;
-            if (ADLX_OK == imgSharp->GetSharpness(&sharpness))
-                outCaps->imageSharpeningSharpness = (int32_t)sharpness;
-        }
 
-        // EnhancedSync - IsSupported + IsEnabled
+        // EnhancedSync
         IADLX3DEnhancedSyncPtr eSync;
         if (ADLX_OK == d3dSvc->GetEnhancedSync(gpu.GetPtr(), &eSync) && eSync)
-        {
             if (ADLX_OK == eSync->IsSupported(&b)) outCaps->enhancedSyncSupported = b ? 1 : 0;
-            if (ADLX_OK == eSync->IsEnabled(&b))   outCaps->enhancedSyncEnabled   = b ? 1 : 0;
-        }
 
-        // WaitForVerticalRefresh - IsSupported + IsEnabled
+        // WaitForVerticalRefresh
         IADLX3DWaitForVerticalRefreshPtr wvRefresh;
         if (ADLX_OK == d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &wvRefresh) && wvRefresh)
-        {
             if (ADLX_OK == wvRefresh->IsSupported(&b)) outCaps->waitForVerticalRefreshSupported = b ? 1 : 0;
-            if (ADLX_OK == wvRefresh->IsEnabled(&b))   outCaps->waitForVerticalRefreshEnabled   = b ? 1 : 0;
-        }
 
-        // FrameRateTargetControl - IsSupported + IsEnabled
+        // FrameRateTargetControl
         IADLX3DFrameRateTargetControlPtr frtc;
         if (ADLX_OK == d3dSvc->GetFrameRateTargetControl(gpu.GetPtr(), &frtc) && frtc)
-        {
             if (ADLX_OK == frtc->IsSupported(&b)) outCaps->frameRateTargetSupported = b ? 1 : 0;
-            if (ADLX_OK == frtc->IsEnabled(&b))   outCaps->frameRateTargetEnabled   = b ? 1 : 0;
-        }
 
-        // MorphologicalAntiAliasing - IsSupported + IsEnabled
+        // MorphologicalAntiAliasing
         IADLX3DMorphologicalAntiAliasingPtr morphAA;
         if (ADLX_OK == d3dSvc->GetMorphologicalAntiAliasing(gpu.GetPtr(), &morphAA) && morphAA)
-        {
             if (ADLX_OK == morphAA->IsSupported(&b)) outCaps->morphologicalAntiAliasingSupported = b ? 1 : 0;
-            if (ADLX_OK == morphAA->IsEnabled(&b))   outCaps->morphologicalAntiAliasingEnabled   = b ? 1 : 0;
-        }
 
-        // AnisotropicFiltering - IsSupported.
-        // ВАЖНО: IADLX3DAnisotropicFiltering НЕ имеет метода IsEnabled() -
-        // подтверждено сверкой с I3DSettings.h (строка 1848). Доступные методы:
-        //   IsSupported(adlx_bool*), GetLevel(ADLX_ANISOTROPIC_FILTERING_LEVEL*),
-        //   SetEnabled(adlx_bool), SetLevel(ADLX_ANISOTROPIC_FILTERING_LEVEL).
-        // GetLevel возвращает enum LEVEL (OFF/2X/4X/8X/16X) - мы могли бы
-        // использовать его для заполнения *Enabled, но это требует маппинга
-        // enum → bool. Для простоты оставляем anisotropicFilteringEnabled = 0
-        // (UI не показывает этот тумблер как активный при инициализации;
-        // пользователь сам включит через SetEnabled если нужно).
+        // AnisotropicFiltering
         IADLX3DAnisotropicFilteringPtr aniso;
         if (ADLX_OK == d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) && aniso)
-        {
             if (ADLX_OK == aniso->IsSupported(&b)) outCaps->anisotropicFilteringSupported = b ? 1 : 0;
-            // anisotropicFilteringEnabled остаётся 0 (нет IsEnabled на этом интерфейсе)
-        }
 
-        // Tessellation - IsSupported.
-        // ВАЖНО: IADLX3DTessellation НЕ имеет метода IsEnabled() -
-        // подтверждено сверкой с I3DSettings.h (строка 1991). Доступные методы:
-        //   IsSupported(adlx_bool*), GetMode(ADLX_TESSELLATION_MODE*),
-        //   GetLevel(ADLX_TESSELLATION_LEVEL*), SetMode, SetLevel.
-        // Аналогично AnisotropicFiltering: tessellationEnabled остаётся 0
-        // при инициализации (читать через GetMode/GetLevel + маппинг enum
-        // можно в отдельной итерации патча).
+        // Tessellation
         IADLX3DTessellationPtr tess;
         if (ADLX_OK == d3dSvc->GetTessellation(gpu.GetPtr(), &tess) && tess)
-        {
             if (ADLX_OK == tess->IsSupported(&b)) outCaps->tessellationSupported = b ? 1 : 0;
-            // tessellationEnabled остаётся 0 (нет IsEnabled на этом интерфейсе)
-        }
     }
 
     //--- GPU Tuning Services ---
@@ -826,6 +774,41 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayInfo(int32_t disp
         if (ADLX_OK == gpuScaling->IsEnabled(&b))   outInfo->gpuScalingEnabled   = b ? 1 : 0;
     }
 
+    //--- v1.1.0: Custom Color (Brightness / Contrast / Saturation / Hue) ---
+    // IADLXDisplayCustomColor НЕ имеет общего IsSupported - подтверждено сверкой
+    // с IDisplaySettings.h (строка 1155). Используем IsBrightnessSupported как
+    // базовый индикатор поддержки CustomColor, и затем условно читаем
+    // Contrast/Saturation/Hue только если соответствующие Is*Supported вернули true.
+    IADLXDisplayCustomColorPtr customColor;
+    if (ADLX_OK == dispSvc->GetCustomColor(disp.GetPtr(), &customColor) && customColor)
+    {
+        adlx_bool bBrightSup = false;
+        if (ADLX_OK == customColor->IsBrightnessSupported(&bBrightSup) && bBrightSup)
+        {
+            outInfo->customColorSupported = 1;
+            adlx_int v = 0;
+            if (ADLX_OK == customColor->GetBrightness(&v))
+                outInfo->customColorBrightness = (int32_t)v;
+
+            adlx_bool bSup = false;
+            if (ADLX_OK == customColor->IsContrastSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetContrast(&v))
+                    outInfo->customColorContrast = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsSaturationSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetSaturation(&v))
+                    outInfo->customColorSaturation = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsHueSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetHue(&v))
+                    outInfo->customColorHue = (int32_t)v;
+            }
+        }
+    }
+
     //--- Scaling mode ---
     IADLXDisplayScalingModePtr scalingMode;
     if (ADLX_OK == dispSvc->GetScalingMode(disp.GetPtr(), &scalingMode) && scalingMode)
@@ -851,50 +834,6 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayInfo(int32_t disp
         ADLX_PIXEL_FORMAT pf = FORMAT_UNKNOWN;
         if (ADLX_OK == pixelFormat->GetValue(&pf))
             outInfo->currentPixelFormat = (int32_t)pf;
-    }
-
-    //--- v1.0.1: Custom Color (Brightness / Contrast / Saturation / Hue) ---
-    // Читаем текущие значения из AMD Adrenalin, чтобы DisplayColorPageViewModel
-    // при инициализации показывала реальные значения, а не дефолтные 50/50/100/50.
-    //
-    // ВАЖНО: IADLXDisplayCustomColor НЕ имеет общего метода IsSupported() -
-    // подтверждено сверкой с IDisplaySettings.h (строка 1155). Вместо этого
-    // интерфейс имеет отдельные Is*Supported методы для каждого параметра:
-    //   IsBrightnessSupported(adlx_bool*), IsContrastSupported(adlx_bool*),
-    //   IsSaturationSupported(adlx_bool*), IsHueSupported(adlx_bool*),
-    //   IsTemperatureSupported(adlx_bool*).
-    // Мы считаем CustomColorSupported=true если поддержан хотя бы Brightness
-    // (это базовый параметр, доступный на всех AMD GPU с CustomColor).
-    IADLXDisplayCustomColorPtr customColor;
-    if (ADLX_OK == dispSvc->GetCustomColor(disp.GetPtr(), &customColor) && customColor)
-    {
-        adlx_bool bBrightSup = false, bContrastSup = false, bSatSup = false, bHueSup = false;
-        if (ADLX_OK == customColor->IsBrightnessSupported(&bBrightSup) && bBrightSup)
-        {
-            // CustomColorSupported = true если хотя бы Brightness поддержан
-            outInfo->customColorSupported = 1;
-
-            adlx_int v = 0;
-            if (ADLX_OK == customColor->GetBrightness(&v))
-                outInfo->customColorBrightness = (int32_t)v;
-
-            // Contrast / Saturation / Hue - читаем только если поддержаны
-            if (ADLX_OK == customColor->IsContrastSupported(&bContrastSup) && bContrastSup)
-            {
-                if (ADLX_OK == customColor->GetContrast(&v))
-                    outInfo->customColorContrast = (int32_t)v;
-            }
-            if (ADLX_OK == customColor->IsSaturationSupported(&bSatSup) && bSatSup)
-            {
-                if (ADLX_OK == customColor->GetSaturation(&v))
-                    outInfo->customColorSaturation = (int32_t)v;
-            }
-            if (ADLX_OK == customColor->IsHueSupported(&bHueSup) && bHueSup)
-            {
-                if (ADLX_OK == customColor->GetHue(&v))
-                    outInfo->customColorHue = (int32_t)v;
-            }
-        }
     }
 
     // Primary display - через IADLXDisplay метод IsExternal не подходит.
@@ -1123,26 +1062,171 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayColorDepth(int32_
 }
 
 //=========================================================================
-// v1.0.1: GPU Performance Metrics (для вкладки Performance Monitoring)
+// v1.1.0: Display Custom Color setters (через IADLXDisplayCustomColor)
+// Сверено с IDisplaySettings.h:
+//   SetBrightness(adlx_int), SetContrast(adlx_int),
+//   SetSaturation(adlx_int), SetHue(adlx_int)
 //=========================================================================
-// Читает текущие метрики GPU через IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics.
-// На Polaris (RX 580) доступны: GPUUsage, GPUClockSpeed, GPUVRAMClockSpeed,
-// GPUTemperature, GPUFanSpeed, GPUPower. GPUTotalBoardPower и GPUVoltage
-// могут быть недоступны - в этом случае соответствующий *Valid = 0.
+
+// Helper: получает IADLXDisplayCustomColor для указанного displayIndex.
+// Возвращает BRIDGE_OK и заполняет ppCustomColor, либо код ошибки.
+static int32_t GetCustomColorForDisplay(int32_t displayIndex, IADLXDisplayCustomColor** ppCustomColor)
+{
+    *ppCustomColor = nullptr;
+    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
+    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
+    if (!sys) return BRIDGE_FAIL;
+    IADLXDisplayServicesPtr dispSvc;
+    if (ADLX_OK != sys->GetDisplaysServices(&dispSvc) || !dispSvc) return BRIDGE_FAIL;
+    IADLXDisplayListPtr dispList;
+    if (ADLX_OK != dispSvc->GetDisplays(&dispList) || !dispList) return BRIDGE_FAIL;
+    if (displayIndex < 0 || (adlx_uint)displayIndex >= dispList->Size()) return BRIDGE_INVALID_ARGS;
+    IADLXDisplayPtr disp;
+    if (ADLX_OK != dispList->At((adlx_uint)displayIndex, &disp) || !disp) return BRIDGE_FAIL;
+    IADLXDisplayCustomColorPtr customColor;
+    if (ADLX_OK != dispSvc->GetCustomColor(disp.GetPtr(), &customColor) || !customColor)
+        return BRIDGE_INTERFACE_UNSUPPORTED;
+    // Возвращаем raw pointer — caller обязан вызвать Release()
+    *ppCustomColor = customColor.Detach();
+    return BRIDGE_OK;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayBrightness(int32_t displayIndex, int32_t value)
+{
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_RESULT res = cc->SetBrightness((adlx_int)value);
+    cc->Release();
+    return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayContrast(int32_t displayIndex, int32_t value)
+{
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_RESULT res = cc->SetContrast((adlx_int)value);
+    cc->Release();
+    return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplaySaturation(int32_t displayIndex, int32_t value)
+{
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_RESULT res = cc->SetSaturation((adlx_int)value);
+    cc->Release();
+    return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayHue(int32_t displayIndex, int32_t value)
+{
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_RESULT res = cc->SetHue((adlx_int)value);
+    cc->Release();
+    return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
+}
+
+//=========================================================================
+// v1.1.0: CustomColor ranges (min/max/step + recommendedDefault = middle)
+// Сверено с IDisplaySettings.h:
+//   GetBrightnessRange(ADLX_IntRange*), GetContrastRange(ADLX_IntRange*),
+//   GetSaturationRange(ADLX_IntRange*), GetHueRange(ADLX_IntRange*)
+//=========================================================================
+
+static void FillCustomColorRange(const ADLX_IntRange& r, BridgeCustomColorRange* outRange)
+{
+    outRange->minValue = (int32_t)r.minValue;
+    outRange->maxValue = (int32_t)r.maxValue;
+    outRange->step     = (int32_t)r.step;
+    // recommendedDefault = середина диапазона — используется как "factory default"
+    // при Reset (в ADLX SDK нет прямого метода GetDefault для CustomColor).
+    outRange->recommendedDefault = (int32_t)((r.minValue + r.maxValue) / 2);
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayBrightnessRange(int32_t displayIndex, BridgeCustomColorRange* outRange)
+{
+    if (!outRange) return BRIDGE_INVALID_ARGS;
+    memset(outRange, 0, sizeof(BridgeCustomColorRange));
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_IntRange r = {0,0,0};
+    ADLX_RESULT res = cc->GetBrightnessRange(&r);
+    cc->Release();
+    if (ADLX_OK != res) return BRIDGE_FAIL;
+    FillCustomColorRange(r, outRange);
+    return BRIDGE_OK;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayContrastRange(int32_t displayIndex, BridgeCustomColorRange* outRange)
+{
+    if (!outRange) return BRIDGE_INVALID_ARGS;
+    memset(outRange, 0, sizeof(BridgeCustomColorRange));
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_IntRange r = {0,0,0};
+    ADLX_RESULT res = cc->GetContrastRange(&r);
+    cc->Release();
+    if (ADLX_OK != res) return BRIDGE_FAIL;
+    FillCustomColorRange(r, outRange);
+    return BRIDGE_OK;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplaySaturationRange(int32_t displayIndex, BridgeCustomColorRange* outRange)
+{
+    if (!outRange) return BRIDGE_INVALID_ARGS;
+    memset(outRange, 0, sizeof(BridgeCustomColorRange));
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_IntRange r = {0,0,0};
+    ADLX_RESULT res = cc->GetSaturationRange(&r);
+    cc->Release();
+    if (ADLX_OK != res) return BRIDGE_FAIL;
+    FillCustomColorRange(r, outRange);
+    return BRIDGE_OK;
+}
+
+extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayHueRange(int32_t displayIndex, BridgeCustomColorRange* outRange)
+{
+    if (!outRange) return BRIDGE_INVALID_ARGS;
+    memset(outRange, 0, sizeof(BridgeCustomColorRange));
+    IADLXDisplayCustomColor* cc = nullptr;
+    int32_t rc = GetCustomColorForDisplay(displayIndex, &cc);
+    if (rc != BRIDGE_OK || !cc) return rc;
+    ADLX_IntRange r = {0,0,0};
+    ADLX_RESULT res = cc->GetHueRange(&r);
+    cc->Release();
+    if (ADLX_OK != res) return BRIDGE_FAIL;
+    FillCustomColorRange(r, outRange);
+    return BRIDGE_OK;
+}
+
+//=========================================================================
+// v1.0.1: GPU Performance Metrics (для вкладки Performance Monitoring)
+// Сверено с IPerformanceMonitoring.h:
+//   IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics(IADLXGPU*, IADLXGPUMetrics**)
+//   IADLXGPUMetrics::GPUTemperature(adlx_double*), GPUUsage(adlx_double*),
+//     GPUClockSpeed(adlx_int*), GPUVRAMClockSpeed(adlx_int*),
+//     GPUFanSpeed(adlx_int*), GPUPower(adlx_double*),
+//     GPUTotalBoardPower(adlx_double*), GPUVoltage(adlx_int*)
+//=========================================================================
 extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIndex, BridgeGpuMetrics* outMetrics)
 {
     if (!outMetrics) return BRIDGE_INVALID_ARGS;
     memset(outMetrics, 0, sizeof(BridgeGpuMetrics));
     outMetrics->index = gpuIndex;
-    // Инициализируем все *Valid = 0 (поля уже нули после memset)
-    // Значения метрик останутся 0 если не удалось прочитать
 
     if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-
     IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
     if (!sys) return BRIDGE_FAIL;
 
-    // Получаем GPU по индексу
     IADLXGPUListPtr gpuList;
     if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
     adlx_uint cnt = gpuList->Size();
@@ -1150,62 +1234,33 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIn
     IADLXGPUPtr gpu;
     if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
 
-    // Получаем PerformanceMonitoringServices
     IADLXPerformanceMonitoringServicesPtr perfSvc;
     if (ADLX_OK != sys->GetPerformanceMonitoringServices(&perfSvc) || !perfSvc)
         return BRIDGE_INTERFACE_UNSUPPORTED;
 
-    // GetCurrentGPUMetrics возвращает снапшот текущих значений
     IADLXGPUMetricsPtr metrics;
     if (ADLX_OK != perfSvc->GetCurrentGPUMetrics(gpu.GetPtr(), &metrics) || !metrics)
         return BRIDGE_FAIL;
 
-    // Читаем каждое поле по отдельности; каждое имеет свой *Valid флаг,
-    // потому что на разных GPU доступны разные метрики (Polaris не отдаёт
-    // GPUVoltage, RDNA отдаёт)
     adlx_double dVal = 0.0;
     adlx_int    iVal = 0;
 
     if (ADLX_OK == metrics->GPUTemperature(&dVal))
-    {
-        outMetrics->gpuTemperature = dVal;
-        outMetrics->temperatureValid = 1;
-    }
+    { outMetrics->gpuTemperature = dVal; outMetrics->temperatureValid = 1; }
     if (ADLX_OK == metrics->GPUUsage(&dVal))
-    {
-        outMetrics->gpuUsage = dVal;
-        outMetrics->usageValid = 1;
-    }
+    { outMetrics->gpuUsage = dVal; outMetrics->usageValid = 1; }
     if (ADLX_OK == metrics->GPUClockSpeed(&iVal))
-    {
-        outMetrics->gpuClockMHz = (int32_t)iVal;
-        outMetrics->clockValid = 1;
-    }
+    { outMetrics->gpuClockMHz = (int32_t)iVal; outMetrics->clockValid = 1; }
     if (ADLX_OK == metrics->GPUVRAMClockSpeed(&iVal))
-    {
-        outMetrics->vramClockMHz = (int32_t)iVal;
-        outMetrics->vramClockValid = 1;
-    }
+    { outMetrics->vramClockMHz = (int32_t)iVal; outMetrics->vramClockValid = 1; }
     if (ADLX_OK == metrics->GPUFanSpeed(&iVal))
-    {
-        outMetrics->fanSpeedRpm = (int32_t)iVal;
-        outMetrics->fanSpeedValid = 1;
-    }
+    { outMetrics->fanSpeedRpm = (int32_t)iVal; outMetrics->fanSpeedValid = 1; }
     if (ADLX_OK == metrics->GPUPower(&dVal))
-    {
-        outMetrics->powerDrawWatts = dVal;
-        outMetrics->powerValid = 1;
-    }
+    { outMetrics->powerDrawWatts = dVal; outMetrics->powerValid = 1; }
     if (ADLX_OK == metrics->GPUTotalBoardPower(&dVal))
-    {
-        outMetrics->totalBoardPower = dVal;
-        outMetrics->totalBoardPowerValid = 1;
-    }
+    { outMetrics->totalBoardPower = dVal; outMetrics->totalBoardPowerValid = 1; }
     if (ADLX_OK == metrics->GPUVoltage(&iVal))
-    {
-        outMetrics->gpuVoltage = (int32_t)iVal;
-        outMetrics->voltageValid = 1;
-    }
+    { outMetrics->gpuVoltage = (int32_t)iVal; outMetrics->voltageValid = 1; }
 
     return BRIDGE_OK;
 }
