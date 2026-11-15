@@ -33,6 +33,12 @@ public sealed class JsonProfileRepository : IProfileRepository
 
     private readonly IAppConfigService _configService;
 
+    public JsonProfileRepository()
+    {
+        // Для CLI режима - создаем заглушку, которая не будет использоваться
+        ProfilePaths.EnsureDirectories();
+    }
+
     public JsonProfileRepository(IAppConfigService configService)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
