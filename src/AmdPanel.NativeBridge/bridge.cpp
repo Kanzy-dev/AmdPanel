@@ -400,52 +400,102 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCapabilities(int32_t 
         // AntiLag
         IADLX3DAntiLagPtr antiLag;
         if (ADLX_OK == d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) && antiLag)
-            if (ADLX_OK == antiLag->IsSupported(&b)) outCaps->antiLagSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = antiLag->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->antiLagSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->antiLagSupported = 0;
+        }
 
         // Chill
         IADLX3DChillPtr chill;
         if (ADLX_OK == d3dSvc->GetChill(gpu.GetPtr(), &chill) && chill)
-            if (ADLX_OK == chill->IsSupported(&b)) outCaps->chillSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = chill->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->chillSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->chillSupported = 0;
+        }
 
         // Boost
         IADLX3DBoostPtr boost;
         if (ADLX_OK == d3dSvc->GetBoost(gpu.GetPtr(), &boost) && boost)
-            if (ADLX_OK == boost->IsSupported(&b)) outCaps->boostSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = boost->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->boostSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->boostSupported = 0;
+        }
 
         // Image Sharpening
         IADLX3DImageSharpeningPtr imgSharp;
         if (ADLX_OK == d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) && imgSharp)
-            if (ADLX_OK == imgSharp->IsSupported(&b)) outCaps->imageSharpeningSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = imgSharp->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->imageSharpeningSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->imageSharpeningSupported = 0;
+        }
 
         // EnhancedSync
         IADLX3DEnhancedSyncPtr eSync;
         if (ADLX_OK == d3dSvc->GetEnhancedSync(gpu.GetPtr(), &eSync) && eSync)
-            if (ADLX_OK == eSync->IsSupported(&b)) outCaps->enhancedSyncSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = eSync->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->enhancedSyncSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->enhancedSyncSupported = 0;
+        }
 
         // WaitForVerticalRefresh
         IADLX3DWaitForVerticalRefreshPtr wvRefresh;
         if (ADLX_OK == d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &wvRefresh) && wvRefresh)
-            if (ADLX_OK == wvRefresh->IsSupported(&b)) outCaps->waitForVerticalRefreshSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = wvRefresh->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->waitForVerticalRefreshSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->waitForVerticalRefreshSupported = 0;
+        }
 
         // FrameRateTargetControl
         IADLX3DFrameRateTargetControlPtr frtc;
         if (ADLX_OK == d3dSvc->GetFrameRateTargetControl(gpu.GetPtr(), &frtc) && frtc)
-            if (ADLX_OK == frtc->IsSupported(&b)) outCaps->frameRateTargetSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = frtc->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->frameRateTargetSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->frameRateTargetSupported = 0;
+        }
 
         // MorphologicalAntiAliasing
         IADLX3DMorphologicalAntiAliasingPtr morphAA;
         if (ADLX_OK == d3dSvc->GetMorphologicalAntiAliasing(gpu.GetPtr(), &morphAA) && morphAA)
-            if (ADLX_OK == morphAA->IsSupported(&b)) outCaps->morphologicalAntiAliasingSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = morphAA->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->morphologicalAntiAliasingSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->morphologicalAntiAliasingSupported = 0;
+        }
 
         // AnisotropicFiltering
         IADLX3DAnisotropicFilteringPtr aniso;
         if (ADLX_OK == d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) && aniso)
-            if (ADLX_OK == aniso->IsSupported(&b)) outCaps->anisotropicFilteringSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = aniso->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->anisotropicFilteringSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->anisotropicFilteringSupported = 0;
+        }
 
         // Tessellation
         IADLX3DTessellationPtr tess;
         if (ADLX_OK == d3dSvc->GetTessellation(gpu.GetPtr(), &tess) && tess)
-            if (ADLX_OK == tess->IsSupported(&b)) outCaps->tessellationSupported = b ? 1 : 0;
+        {
+            b = false;
+            ADLX_RESULT res = tess->IsSupported(&b);
+            if (res == ADLX_OK) outCaps->tessellationSupported = b ? 1 : 0;
+            else if (res == ADLX_NOT_SUPPORTED) outCaps->tessellationSupported = 0;
+        }
     }
 
     //--- GPU Tuning Services ---

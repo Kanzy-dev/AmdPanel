@@ -113,11 +113,22 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
     }
 
     private int _selectedRefresh;
+    private bool _isDirty;
     public int SelectedRefresh
     {
         get => _selectedRefresh;
-        set { if (SetField(ref _selectedRefresh, value)) RecomputeBandwidthWarning(); }
+        set 
+        { 
+            if (SetField(ref _selectedRefresh, value)) 
+            {
+                _isDirty = true;
+                OnPropertyChanged(nameof(IsDirty));
+                RecomputeBandwidthWarning();
+            }
+        }
     }
+
+    public bool IsDirty => _isDirty;
 
     private int _selectedBpc = 8;
     public int SelectedBpc
@@ -155,9 +166,13 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         if (SelectedResolution is null) return new DisplayApplyResult(-1, false, false, "Не выбрано разрешение");
         string device = _display.DisplayName;
         var mgr = _hub.DisplayModeManager;
-        return await mgr.ApplyModeAsync(device,
+        var result = await mgr.ApplyDisplayMode(device,
             SelectedResolution.Width, SelectedResolution.Height,
             SelectedRefresh, SelectedBpc);
+        
+        _isDirty = false;
+        OnPropertyChanged(nameof(IsDirty));
+        return result;
     }
 
     // --- Helpers ---

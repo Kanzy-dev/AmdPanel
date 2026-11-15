@@ -1,9 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows.Input;
 using AmdPanel.App.Mvvm;
+using AmdPanel.App.Services;
 using AmdPanel.Core.Hardware.Capability;
 using AmdPanel.Core.Profiles.Models;
 using AmdPanel.Core.Profiles.Services;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AmdPanel.App.ViewModels.Pages;
 
@@ -43,6 +46,10 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
             foreach (var ap in _globalProfile.ApplicationProfiles)
                 ApplicationProfiles.Add(new ApplicationProfileItem(ap));
         }
+
+        // Инициализация команд в стиле NVIDIA Control Panel
+        BrowseProgramCommand = new RelayCommand(BrowseProgram);
+        RemoveProgramCommand = new RelayCommand(RemoveProgram, () => SelectedProgram is not null);
     }
 
     public bool IsAvailable => _caps.AntiLag || _caps.Chill || _caps.ImageSharpening
@@ -75,6 +82,112 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     // === Program Settings tab ===
     public ObservableCollection<ApplicationProfileItem> ApplicationProfiles { get; } = new();
 
+    /// <summary>
+    /// Загружает список установленных программ при переключении на вкладку
+    /// "Программные настройки" в стиле NVIDIA Control Panel.
+    /// </summary>
+    public void LoadInstalledApps()
+    {
+        InstalledPrograms.Clear();
+        var apps = InstalledAppsScanner.ScanAll();
+        foreach (var app in apps)
+        {
+            InstalledPrograms.Add(app);
+        }
+        SelectedProgram = null;
+        SelectedParameterDescription = string.Empty;
+        SelectedParameterUsage = string.Empty;
+    }
+
+    // Новые свойства для NVIDIA Control Panel стиля
+    public ObservableCollection<InstalledAppInfo> InstalledPrograms { get; } = new();
+    private InstalledAppInfo? _selectedProgram;
+    public InstalledAppInfo? SelectedProgram
+    {
+        get => _selectedProgram;
+        set
+        {
+            if (SetField(ref _selectedProgram, value))
+            {
+                UpdateParameterDescription();
+            }
+        }
+    }
+
+    public ICommand BrowseProgramCommand { get; }
+    public ICommand RemoveProgramCommand { get; }
+
+    public string SelectedParameterDescription { get; set; } = string.Empty;
+    public string SelectedParameterUsage { get; set; } = string.Empty;
+
+    private void BrowseProgram()
+    {
+        var openFileDialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Executable files (*.exe)|*.exe",
+            Title = "Select application to add"
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            var exePath = openFileDialog.FileName;
+            var icon = InstalledAppsScanner.ExtractIcon(exePath);
+            var name = System.IO.Path.GetFileNameWithoutExtension(exePath);
+
+            var appInfo = new InstalledAppInfo
+            {
+                DisplayName = name,
+                ExecutablePath = exePath,
+                ProcessName = name,
+                Icon = icon,
+                Source = "Custom"
+            };
+
+            InstalledPrograms.Add(appInfo);
+            SelectedProgram = appInfo;
+        }
+    }
+
+    private void RemoveProgram()
+    {
+        if (SelectedProgram is not null)
+        {
+            InstalledPrograms.Remove(SelectedProgram);
+            SelectedProgram = null;
+            SelectedParameterDescription = string.Empty;
+            SelectedParameterUsage = string.Empty;
+        }
+    }
+
+    private void UpdateParameterDescription()
+    {
+        if (SelectedProgram is not null)
+        {
+            SelectedParameterDescription = $"Select 3D settings for {SelectedProgram.DisplayName}";
+            SelectedParameterUsage = "Settings will apply when this program is running.";
+        }
+        else
+        {
+            SelectedParameterDescription = string.Empty;
+            SelectedParameterUsage = string.Empty;
+        }
+    }
+
+    // Свойства для новой реализации в стиле NVIDIA Control Panel
+    public ICommand BrowseProgramCommand { get; }
+    public ICommand RemoveProgramCommand { get; }
+
+    public string SelectedParameterDescription { get; set; } = string.Empty;
+    public string SelectedParameterUsage { get; set; } = string.Empty;
+
+    public ObservableCollection<InstalledAppInfo> InstalledPrograms { get; } = new();
+    private InstalledAppInfo? _selectedProgram;
+    public InstalledAppInfo? SelectedProgram
+    {
+        get => _selectedProgram;
+        set => SetField(ref _selectedProgram, value);
+    }
+
     private ApplicationProfileItem? _selectedApplication;
     public ApplicationProfileItem? SelectedApplication
     {
@@ -82,7 +195,58 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         set
         {
             if (SetField(ref _selectedApplication, value))
+            {
                 RefreshApplicationEditPanel();
+                UpdateParameterDescription();
+            }
+        }
+    }
+
+    private void UpdateParameterDescription()
+    {
+        if (SelectedApplication is not null)
+        {
+            SelectedParameterDescription = $"3D-настройки для {SelectedApplication.Profile.DisplayName}";
+            SelectedParameterUsage = "Профиль применяется, когда запущен указанный процесс.";
+        }
+        else
+        {
+            SelectedParameterDescription = string.Empty;
+            SelectedParameterUsage = string.Empty;
+        }
+    }
+
+    private void UpdateSelectedApplication()
+    {
+        // Загружаем список программ при первом обращении к этой вкладке
+        if (InstalledPrograms.Count == 0)
+        {
+            LoadInstalledApps();
+        }
+
+        if (SelectedProgram is not null)
+        {
+            // Попытка найти существующий профиль для этой программы
+            var existing = ApplicationProfiles.FirstOrDefault(ap => ap.Profile.ProcessName == SelectedProgram.ProcessName);
+            if (existing is null && _profileService is not null && _globalProfile is not null)
+            {
+                // Создаём новый профиль
+                var newProfile = new ApplicationProfile
+                {
+                    ProcessName = SelectedProgram.ProcessName,
+                    DisplayName = SelectedProgram.DisplayName,
+                    ExecutablePath = SelectedProgram.ExecutablePath,
+                    ThreeDSettings = ThreeDSettingsProfile.Defaults()
+                };
+                _globalProfile.ApplicationProfiles.Add(newProfile);
+                ApplicationProfiles.Add(new ApplicationProfileItem(newProfile));
+                existing = ApplicationProfiles.Last();
+            }
+            SelectedApplication = existing;
+        }
+        else
+        {
+            SelectedApplication = null;
         }
     }
 
@@ -97,8 +261,11 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     private bool _appAntiLag;   public bool AppAntiLag   { get => _appAntiLag;   set => SetField(ref _appAntiLag, value); }
     private bool _appChill;     public bool AppChill     { get => _appChill;     set => SetField(ref _appChill, value); }
     private int  _appSharpness=50; public int AppSharpness { get => _appSharpness; set => SetField(ref _appSharpness, value); }
+    private bool _appSharpnessEnabled; public bool AppSharpnessEnabled { get => _appSharpnessEnabled; set => SetField(ref _appSharpnessEnabled, value); }
     private int  _appVSync;     public int AppVSync       { get => _appVSync;     set => SetField(ref _appVSync, value); }
     private int  _appTess;      public int AppTess        { get => _appTess;      set => SetField(ref _appTess, value); }
+    private int  _appAniso;     public int AppAniso       { get => _appAniso;     set => SetField(ref _appAniso, value); }
+    private bool _appBoost;     public bool AppBoost     { get => _appBoost;     set => SetField(ref _appBoost, value); }
 
     /// <summary> Добавляет новый программный профиль по имени процесса. </summary>
     public void AddApplicationProfile(string processName, string? exePath = null)
@@ -143,9 +310,11 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         if (SelectedApplication is null || _profileService is null) return;
         SelectedApplication.Profile.ThreeDSettings.AntiLag = AppAntiLag;
         SelectedApplication.Profile.ThreeDSettings.Chill = AppChill;
-        SelectedApplication.Profile.ThreeDSettings.Sharpness = AppSharpness;
+        SelectedApplication.Profile.ThreeDSettings.Sharpness = AppSharpnessEnabled ? AppSharpness : 0;
         SelectedApplication.Profile.ThreeDSettings.VSyncMode = AppVSync;
         SelectedApplication.Profile.ThreeDSettings.TessLevel = AppTess;
+        SelectedApplication.Profile.ThreeDSettings.AnisotropicLevel = AppAniso;
+        SelectedApplication.Profile.ThreeDSettings.Boost = AppBoost;
         _profileService.Save(_globalProfile!);
     }
 
@@ -153,16 +322,44 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     {
         if (SelectedApplication is null)
         {
-            AppAntiLag = false; AppChill = false; AppSharpness = 50; AppVSync = 0; AppTess = 0;
+            AppAntiLag = false;
+            AppChill = false;
+            AppSharpnessEnabled = false;
+            AppSharpness = 50;
+            AppVSync = 0;
+            AppTess = 0;
+            AppAniso = 0;
+            AppBoost = false;
+            UpdateParameterDescription();
             return;
         }
         var t = SelectedApplication.Profile.ThreeDSettings;
         // Без SetField чтобы не помечать Dirty при программном заполнении
-        _appAntiLag = t.AntiLag; OnPropertyChanged(nameof(AppAntiLag));
-        _appChill = t.Chill; OnPropertyChanged(nameof(AppChill));
-        _appSharpness = t.Sharpness; OnPropertyChanged(nameof(AppSharpness));
-        _appVSync = t.VSyncMode; OnPropertyChanged(nameof(AppVSync));
-        _appTess = t.TessLevel; OnPropertyChanged(nameof(AppTess));
+        _appAntiLag = t.AntiLag;
+        OnPropertyChanged(nameof(AppAntiLag));
+
+        _appChill = t.Chill;
+        OnPropertyChanged(nameof(AppChill));
+
+        _appSharpnessEnabled = t.Sharpness > 0;
+        OnPropertyChanged(nameof(AppSharpnessEnabled));
+
+        _appSharpness = t.Sharpness;
+        OnPropertyChanged(nameof(AppSharpness));
+
+        _appVSync = t.VSyncMode;
+        OnPropertyChanged(nameof(AppVSync));
+
+        _appTess = t.TessLevel;
+        OnPropertyChanged(nameof(AppTess));
+
+        _appAniso = t.AnisotropicLevel;
+        OnPropertyChanged(nameof(AppAniso));
+
+        _appBoost = t.Boost;
+        OnPropertyChanged(nameof(AppBoost));
+
+        UpdateParameterDescription();
     }
 }
 
