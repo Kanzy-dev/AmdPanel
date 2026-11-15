@@ -155,22 +155,18 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
-            <!-- v1.0.1: Кнопки Add/Remove с нормальными подписями и пропорциями.
-                 StackPanel Orientation=Horizontal вместо DockPanel (LastChildFill=True)
-                 растягивал последнюю кнопку "-" на всю оставшуюся ширину, из-за чего
-                 получалась одна широкая пустая кнопка и одна узкая. -->
-            <StackPanel Orientation="Horizontal" Margin="0,4">
-              <TextBox Width="200" VerticalAlignment="Center"
+            <DockPanel>
+              <TextBox Width="160" VerticalAlignment="Center"
                        Text="{Binding NewProcessName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-              <Button Style="{StaticResource Button.Standard}" Margin="8,0,0,0"
-                      MinWidth="80" Click="OnAddApplicationClick" Content="Add..."/>
-              <Button Style="{StaticResource Button.Standard}" Margin="8,0,0,0"
-                      MinWidth="80" Click="OnRemoveApplicationClick" Content="Remove"/>
-            </StackPanel>
+              <Button Style="{StaticResource Button.Standard}" Margin="4,0,0,0"
+                      Width="50" Click="OnAddApplicationClick" Content="+"/>
+              <Button Style="{StaticResource Button.Standard}" Margin="4,0,0,0"
+                      Width="50" Click="OnRemoveApplicationClick" Content="-"/>
+            </DockPanel>
             <TextBlock Margin="0,8,0,0" FontSize="11"
                        Foreground="{StaticResource Brush.TextSecondary}"
                        TextWrapping="Wrap"
-                       Text="Enter process name (e.g. cyberpunk2077) and click Add, or click Add... to browse for an .exe file. Profile will auto-apply when process starts, and revert to global on exit."/>
+                       Text="Enter process name (e.g. cyberpunk2077). Profile will auto-apply when process starts, and revert to global on exit."/>
           </DockPanel>
 
           <!-- Правая колонка: редактор 3D-настроек выбранного приложения -->

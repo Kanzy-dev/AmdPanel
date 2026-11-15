@@ -1,6 +1,4 @@
-using System.IO;
 using System.Windows;
-using System.Windows.Threading;
 using AmdPanel.App.Services;
 using AmdPanel.App.ViewModels;
 using AmdPanel.Core.Hardware;
@@ -25,25 +23,11 @@ public partial class App : Application
     private readonly LanguageService _languageService = new();
     private readonly WatchdogDialogService _watchdogService = new();
 
-    /// <summary> Путь к файлу crash-лога: %AppData%\AmdPanel\crash.log. </summary>
-    private static string CrashLogPath =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "AmdPanel", "crash.log");
-
     public MainViewModel MainViewModel => _mainViewModel!;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        // === v1.0.1: Глобальные обработчики необработанных исключений ===
-        // Программа никогда не должна закрываться молча - любое исключение
-        // логируется в %AppData%\AmdPanel\crash.log и показывается пользователю
-        // через MessageBox. Это критично для диагностики багов на реальном железе.
-        DispatcherUnhandledException += OnDispatcherUnhandledException;
-        AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandledException;
-        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         // === CLI modes (no UI) ===
 
@@ -82,10 +66,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            WriteCrashLog("ADLX initialization failure", ex);
             MessageBox.Show(
-                $"{FindResource("app.title")}\n\n{ex.Message}\n\n" +
-                $"Crash log: {CrashLogPath}",
+                $"{FindResource("app.title")}\n\n{ex.Message}",
                 "AmdPanel",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -108,7 +90,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             // Мониторинг - не критичный для UI. Если не запустился - логируем и продолжаем.
-            WriteCrashLog("GameProfileWatcher failed to start (non-fatal)", ex);
+            System.Diagnostics.Trace.WriteLine($"[App] GameProfileWatcher failed to start: {ex.Message}");
         }
 
         _mainViewModel = new MainViewModel(_hub!, _watchdogService, _languageService, _profileService, globalProfile);
@@ -127,103 +109,5 @@ public partial class App : Application
         _mainViewModel?.ActivePage = null;
         _adlxContext?.Dispose();
         base.OnExit(e);
-    }
-
-    // =================================================================
-    //  v1.0.1: Global exception handlers
-    // =================================================================
-
-    /// <summary>
-    /// DispatcherUnhandledException: ловит исключения из UI-потока WPF
-    /// (binding errors, click handlers, ADLX calls из UI-потока и т.д.).
-    /// e.Handled = true предотвращает crash приложения.
-    /// </summary>
-    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-    {
-        WriteCrashLog("DispatcherUnhandledException", e.Exception);
-        ShowCrashDialog(e.Exception);
-        e.Handled = true;  // Не даём приложению закрыться
-    }
-
-    /// <summary>
-    /// AppDomain.CurrentDomain.UnhandledException: ловит исключения из
-    /// не-UI потоков (фоновые задачи, ADLX callbacks, WMI watcher и т.д.).
-    /// Это "last resort" - приложение всё равно упадёт, но лог будет записан.
-    /// </summary>
-    private void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
-    {
-        if (e.ExceptionObject is Exception ex)
-        {
-            WriteCrashLog($"AppDomain.UnhandledException (IsTerminating={e.IsTerminating})", ex);
-            if (!e.IsTerminating)
-                ShowCrashDialog(ex);
-        }
-    }
-
-    /// <summary>
-    /// TaskScheduler.UnobservedTaskException: ловит исключения из async Task,
-    /// которые никто не наблюдал (забыли await, fire-and-forget).
-    /// e.SetObserved() предотвращает crash.
-    /// </summary>
-    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
-    {
-        WriteCrashLog("TaskScheduler.UnobservedTaskException", e.Exception);
-        e.SetObserved();
-    }
-
-    /// <summary>
-    /// Записывает crash в %AppData%\AmdPanel\crash.log с timestamp и полным stack trace.
-    /// Файл дозаписывается (append), чтобы сохранять историю всех крашей.
-    /// </summary>
-    private static void WriteCrashLog(string category, Exception ex)
-    {
-        try
-        {
-            string dir = Path.GetDirectoryName(CrashLogPath) ?? string.Empty;
-            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-
-            string entry =
-                $"========== {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} =========={Environment.NewLine}" +
-                $"Category: {category}{Environment.NewLine}" +
-                $"App version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}{Environment.NewLine}" +
-                $"OS: {Environment.OSVersion}{Environment.NewLine}" +
-                $"Exception type: {ex.GetType().FullName}{Environment.NewLine}" +
-                $"Message: {ex.Message}{Environment.NewLine}" +
-                $"Source: {ex.Source}{Environment.NewLine}" +
-                $"Stack trace:{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}";
-            if (ex.InnerException is not null)
-            {
-                entry += $"--- Inner exception ---{Environment.NewLine}" +
-                         $"Type: {ex.InnerException.GetType().FullName}{Environment.NewLine}" +
-                         $"Message: {ex.InnerException.Message}{Environment.NewLine}" +
-                         $"Stack: {ex.InnerException.StackTrace}{Environment.NewLine}";
-            }
-            entry += Environment.NewLine;
-            File.AppendAllText(CrashLogPath, entry);
-        }
-        catch
-        {
-            // Никогда не пробрасываем исключение из логгера
-        }
-    }
-
-    /// <summary> Показывает MessageBox с описанием краша. </summary>
-    private static void ShowCrashDialog(Exception ex)
-    {
-        string msg =
-            $"AmdPanel encountered an unexpected error and recovered.{Environment.NewLine}{Environment.NewLine}" +
-            $"Error: {ex.GetType().Name}{Environment.NewLine}" +
-            $"Message: {ex.Message}{Environment.NewLine}{Environment.NewLine}" +
-            $"Details written to:{Environment.NewLine}{CrashLogPath}";
-        try
-        {
-            MessageBox.Show(msg, "AmdPanel - Error recovered",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
-        catch
-        {
-            // Если MessageBox тоже упал - пишем хотя бы в Trace
-            System.Diagnostics.Trace.WriteLine($"[AmdPanel crash] {ex}");
-        }
     }
 }

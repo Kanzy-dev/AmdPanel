@@ -22,6 +22,72 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         _display = display;
         LoadAvailableModes();
         LoadCurrent();
+
+        // v1.1.0: При открытии вкладки сразу заполняем список поддерживаемых
+        // герцовок через Win32 EnumDisplaySettings для текущего разрешения.
+        // Раньше список RefreshRates оставался пустым до выбора пользователем
+        // разрешения в ComboBox - теперь он готов сразу.
+        PrepopulateRefreshRatesForCurrentResolution();
+    }
+
+    /// <summary>
+    /// v1.1.0: Заполняет RefreshRates для текущего активного разрешения через
+    /// Win32 EnumDisplaySettings (ENUM_CURRENT_SETTINGS даёт активный режим,
+    /// перебор iModeNum от 0 даёт все зарегистрированные режимы дисплея).
+    /// Автовыбор — текущая активная герцовка из ENUM_CURRENT_SETTINGS.
+    /// </summary>
+    private void PrepopulateRefreshRatesForCurrentResolution()
+    {
+        try
+        {
+            int curW = _display.CurrentWidth;
+            int curH = _display.CurrentHeight;
+            if (curW <= 0 || curH <= 0) return;
+
+            // Сначала находим ResolutionItem, соответствующий текущему режиму
+            var curRes = Resolutions.FirstOrDefault(r => r.Width == curW && r.Height == curH);
+            if (curRes is not null)
+            {
+                _selectedResolution = curRes;
+                OnPropertyChanged(nameof(SelectedResolution));
+            }
+
+            // Перебираем все режимы DEVMODE, фильтруем по W×H, собираем distinct Hz
+            RefreshRates.Clear();
+            var hzSet = new HashSet<int>();
+            var dm = new AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE
+            {
+                dmSize = (short)System.Runtime.InteropServices.Marshal.SizeOf<AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE>()
+            };
+
+            string deviceName = _display.DisplayName;
+            if (string.IsNullOrEmpty(deviceName))
+                deviceName = null;  // null = primary adapter
+
+            for (int modeNum = 0; modeNum < 1024; modeNum++)
+            {
+                if (!AmdPanel.Core.Hardware.Win32.User32Display.EnumDisplaySettings(deviceName, modeNum, ref dm))
+                    break;
+                if (dm.dmPelsWidth == curW && dm.dmPelsHeight == curH && dm.dmDisplayFrequency > 0)
+                    hzSet.Add(dm.dmDisplayFrequency);
+            }
+
+            foreach (var hz in hzSet.OrderByDescending(x => x))
+                RefreshRates.Add(hz);
+
+            // Автовыбор текущей активной герцовки
+            int currentHz = _display.CurrentRefreshHz;
+            if (currentHz > 0 && RefreshRates.Contains(currentHz))
+                _selectedRefresh = currentHz;
+            else if (RefreshRates.Count > 0)
+                _selectedRefresh = RefreshRates[0];
+            OnPropertyChanged(nameof(SelectedRefresh));
+        }
+        catch
+        {
+            // Никогда не роняем конструктор — список останется пустым,
+            // пользователь выберет разрешение вручную.
+        }
     }
 
     public bool IsAvailable => _display.Connected;
@@ -134,19 +200,8 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
     {
         RefreshRates.Clear();
         if (SelectedResolution is null) return;
-
-        // v1.0.1: Сначала пробуем ADLX GetRefreshRates; если он вернул пустой
-        // массив (Polaris/RDNA могут не отдавать список через ADLX), fallback
-        // на Win32 EnumDisplaySettings - перебираем все режимы DEVMODE и
-        // фильтруем по совпадению разрешения (width × height), собираем unique Hz.
         var hz = _hub.Scanner.GetRefreshRates(_display.Index, SelectedResolution.Width, SelectedResolution.Height);
-        if (hz is null || hz.Length == 0)
-        {
-            hz = EnumerateRefreshRatesViaWin32(_display.DisplayName,
-                SelectedResolution.Width, SelectedResolution.Height);
-        }
-        foreach (var v in hz.Distinct().OrderByDescending(x => x)) RefreshRates.Add(v);
-
+        foreach (var v in hz.OrderByDescending(x => x)) RefreshRates.Add(v);
         // SelectedRefresh — int (не nullable), поэтому используем Contains() вместо
         // FirstOrDefault(...) ?? fallback — оператор ?? не применим к int.
         SelectedRefresh = RefreshRates.Contains(_display.CurrentRefreshHz)
@@ -160,40 +215,6 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
             ColorDepths.Add(10);
         SelectedBpc = ColorDepths.Contains(10) && (int)_display.CurrentColorDepth >= (int)ColorDepthBits.Bpp10
             ? 10 : 8;
-    }
-
-    /// <summary>
-    /// v1.0.1: Win32 fallback для перечисления поддерживаемых герцовок.
-    /// ADLX на Polaris (RX 580) может возвращать пустой список Hz для разрешения
-    /// через GetRefreshRates - в этом случае используем EnumDisplaySettings,
-    /// который перебирает все зарегистрированные в Windows режимы DEVMODE и
-    /// фильтрует по совпадению width × height. Возвращает distinct Hz значения,
-    /// включая 60/75/120/144 Гц для мониторов типа 24N3Q.
-    /// </summary>
-    private static int[] EnumerateRefreshRatesViaWin32(string deviceName, int targetWidth, int targetHeight)
-    {
-        if (string.IsNullOrEmpty(deviceName)) return Array.Empty<int>();
-        var result = new HashSet<int>();
-        // Перебираем iModeNum от 0 до тех пор, пока EnumDisplaySettings не вернёт false
-        for (int modeNum = 0; modeNum < 1024; modeNum++)
-        {
-            try
-            {
-                var dm = new AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE
-                {
-                    dmSize = (short)System.Runtime.InteropServices.Marshal.SizeOf<AmdPanel.Core.Hardware.Win32.User32Display.DEVMODE>()
-                };
-                if (!AmdPanel.Core.Hardware.Win32.User32Display.EnumDisplaySettings(deviceName, modeNum, ref dm))
-                    break;  // конец списка режимов
-                if (dm.dmPelsWidth == targetWidth && dm.dmPelsHeight == targetHeight)
-                {
-                    if (dm.dmDisplayFrequency > 0)
-                        result.Add(dm.dmDisplayFrequency);
-                }
-            }
-            catch { break; }
-        }
-        return result.ToArray();
     }
 
     /// <summary>

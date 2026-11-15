@@ -64,24 +64,6 @@ public sealed class GpuCapabilities
     public bool SmartAccessMemory{ get; init; }
     public bool PerformanceMonitoring { get; init; }
 
-    // === v1.0.1: Текущие значения (sync с AMD Adrenalin) ===
-    // Эти поля заполняются при FromBridge() из значений, прочитанных через
-    // IsEnabled() / GetSharpness() / GetMinFPS() / GetMaxFPS() в bridge.cpp.
-    // Используются ViewModel'ями для инициализации UI фактическими значениями.
-    public bool AntiLagEnabled                  { get; init; }
-    public bool ChillEnabled                    { get; init; }
-    public int  ChillMinFps                     { get; init; } = -1;
-    public int  ChillMaxFps                     { get; init; } = -1;
-    public bool ImageSharpeningEnabled          { get; init; }
-    public int  ImageSharpeningSharpness        { get; init; } = -1;
-    public bool BoostEnabled                    { get; init; }
-    public bool EnhancedSyncEnabled             { get; init; }
-    public bool WaitForVerticalRefreshEnabled   { get; init; }
-    public bool FrameRateTargetEnabled          { get; init; }
-    public bool MorphologicalAAEnabled          { get; init; }
-    public bool AnisotropicEnabled              { get; init; }
-    public bool TessellationEnabled             { get; init; }
-
     public static GpuCapabilities FromBridge(Native.BridgeGpuCapabilities c) => new()
     {
         Index                    = c.Index,
@@ -106,21 +88,36 @@ public sealed class GpuCapabilities
         PresetTuning             = c.PresetTuningSupported     == 1,
         SmartAccessMemory        = c.SmartAccessMemorySupported== 1,
         PerformanceMonitoring    = c.PerformanceMonitoringSupported == 1,
+    };
+}
 
-        // v1.0.1: текущие значения
-        AntiLagEnabled                = c.AntiLagEnabled == 1,
-        ChillEnabled                  = c.ChillEnabled == 1,
-        ChillMinFps                   = c.ChillMinFps,
-        ChillMaxFps                   = c.ChillMaxFps,
-        ImageSharpeningEnabled        = c.ImageSharpeningEnabled == 1,
-        ImageSharpeningSharpness      = c.ImageSharpeningSharpness,
-        BoostEnabled                  = c.BoostEnabled == 1,
-        EnhancedSyncEnabled           = c.EnhancedSyncEnabled == 1,
-        WaitForVerticalRefreshEnabled = c.WaitForVerticalRefreshEnabled == 1,
-        FrameRateTargetEnabled        = c.FrameRateTargetEnabled == 1,
-        MorphologicalAAEnabled        = c.MorphologicalAntiAliasingEnabled == 1,
-        AnisotropicEnabled            = c.AnisotropicFilteringEnabled == 1,
-        TessellationEnabled           = c.TessellationEnabled == 1,
+/// <summary>
+/// Динамические диапазоны частот/вольтажа/вентиляторов для слайдеров.
+/// Поля могут быть 0/невалидны, если функция не поддерживается - проверяется через GpuCapabilities.
+/// </summary>
+public sealed class GpuTuningRanges
+{
+    public int Index { get; init; }
+    public Range? GfxMHz      { get; init; }
+    public Range? VramMHz     { get; init; }
+    public Range? VoltageMv   { get; init; }
+    public Range? FanRpm      { get; init; }
+    public Range? FanAcousticRpm { get; init; }
+    public Range? PowerPct    { get; init; }
+    public bool  AutoTuneSupported { get; init; }
+
+    public sealed record Range(int Min, int Max, int Step);
+
+    public static GpuTuningRanges FromBridge(Native.BridgeTuningRanges r) => new()
+    {
+        Index = r.Index,
+        GfxMHz      = Native.BridgeTuningRanges.IsValidRange(r.GfxMinMHz,    r.GfxMaxMHz,    r.GfxStepMHz)    ? new Range(r.GfxMinMHz,    r.GfxMaxMHz,    r.GfxStepMHz)    : null,
+        VramMHz     = Native.BridgeTuningRanges.IsValidRange(r.VramMinMHz,   r.VramMaxMHz,   r.VramStepMHz)   ? new Range(r.VramMinMHz,   r.VramMaxMHz,   r.VramStepMHz)   : null,
+        VoltageMv   = Native.BridgeTuningRanges.IsValidRange(r.VoltageMinMv, r.VoltageMaxMv, r.VoltageStepMv) ? new Range(r.VoltageMinMv, r.VoltageMaxMv, r.VoltageStepMv) : null,
+        FanRpm      = Native.BridgeTuningRanges.IsValidRange(r.FanMinRpm,    r.FanMaxRpm,    r.FanStepRpm)    ? new Range(r.FanMinRpm,    r.FanMaxRpm,    r.FanStepRpm)    : null,
+        FanAcousticRpm = Native.BridgeTuningRanges.IsValidRange(r.FanAcousticMinRpm, r.FanAcousticMaxRpm, r.FanAcousticStepRpm) ? new Range(r.FanAcousticMinRpm, r.FanAcousticMaxRpm, r.FanAcousticStepRpm) : null,
+        PowerPct    = Native.BridgeTuningRanges.IsValidRange(r.PowerMinPct,  r.PowerMaxPct,  r.PowerStepPct)  ? new Range(r.PowerMinPct,  r.PowerMaxPct,  r.PowerStepPct)  : null,
+        AutoTuneSupported = r.AutoTuneSupported == 1,
     };
 }
 
@@ -166,35 +163,5 @@ public sealed class GpuMetrics
         PowerValid = m.PowerValid == 1,
         TotalBoardPowerValid = m.TotalBoardPowerValid == 1,
         VoltageValid = m.VoltageValid == 1,
-    };
-}
-
-/// <summary>
-/// Динамические диапазоны частот/вольтажа/вентиляторов для слайдеров.
-/// Поля могут быть 0/невалидны, если функция не поддерживается - проверяется через GpuCapabilities.
-/// </summary>
-public sealed class GpuTuningRanges
-{
-    public int Index { get; init; }
-    public Range? GfxMHz      { get; init; }
-    public Range? VramMHz     { get; init; }
-    public Range? VoltageMv   { get; init; }
-    public Range? FanRpm      { get; init; }
-    public Range? FanAcousticRpm { get; init; }
-    public Range? PowerPct    { get; init; }
-    public bool  AutoTuneSupported { get; init; }
-
-    public sealed record Range(int Min, int Max, int Step);
-
-    public static GpuTuningRanges FromBridge(Native.BridgeTuningRanges r) => new()
-    {
-        Index = r.Index,
-        GfxMHz      = Native.BridgeTuningRanges.IsValidRange(r.GfxMinMHz,    r.GfxMaxMHz,    r.GfxStepMHz)    ? new Range(r.GfxMinMHz,    r.GfxMaxMHz,    r.GfxStepMHz)    : null,
-        VramMHz     = Native.BridgeTuningRanges.IsValidRange(r.VramMinMHz,   r.VramMaxMHz,   r.VramStepMHz)   ? new Range(r.VramMinMHz,   r.VramMaxMHz,   r.VramStepMHz)   : null,
-        VoltageMv   = Native.BridgeTuningRanges.IsValidRange(r.VoltageMinMv, r.VoltageMaxMv, r.VoltageStepMv) ? new Range(r.VoltageMinMv, r.VoltageMaxMv, r.VoltageStepMv) : null,
-        FanRpm      = Native.BridgeTuningRanges.IsValidRange(r.FanMinRpm,    r.FanMaxRpm,    r.FanStepRpm)    ? new Range(r.FanMinRpm,    r.FanMaxRpm,    r.FanStepRpm)    : null,
-        FanAcousticRpm = Native.BridgeTuningRanges.IsValidRange(r.FanAcousticMinRpm, r.FanAcousticMaxRpm, r.FanAcousticStepRpm) ? new Range(r.FanAcousticMinRpm, r.FanAcousticMaxRpm, r.FanAcousticStepRpm) : null,
-        PowerPct    = Native.BridgeTuningRanges.IsValidRange(r.PowerMinPct,  r.PowerMaxPct,  r.PowerStepPct)  ? new Range(r.PowerMinPct,  r.PowerMaxPct,  r.PowerStepPct)  : null,
-        AutoTuneSupported = r.AutoTuneSupported == 1,
     };
 }

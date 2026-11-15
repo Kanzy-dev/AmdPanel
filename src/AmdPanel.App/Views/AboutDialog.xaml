@@ -53,19 +53,19 @@
                    Style="{StaticResource Form.ValueLabel}"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource Form.Label}" Text="License"/>
-        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Form.ValueLabel}" Text="MIT"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Form.ValueLabel}" Text="GNU GPL v3.0"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource Form.Label}" Text="Repository"/>
         <TextBlock Grid.Row="4" Grid.Column="1">
-          <Hyperlink NavigateUri="https://github.com/amdpanel/amdpanel"
+          <Hyperlink NavigateUri="https://github.com/Kanzy-dev/AmdPanel"
                      Click="OnRepoClick">
-            <Run Text="github.com/amdpanel/amdpanel"/>
+            <Run Text="github.com/Kanzy-dev/AmdPanel"/>
           </Hyperlink>
         </TextBlock>
 
         <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource Form.Label}" Text="Copyright"/>
         <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource Form.ValueLabel}"
-                   Text="© 2026 AmdPanel contributors"/>
+                   Text="© 2026 Kanzy-dev"/>
       </Grid>
     </Border>
 
@@ -78,6 +78,6 @@
     <TextBlock Margin="0,12,0,0" FontSize="11"
                Foreground="{StaticResource Brush.TextSecondary}"
                TextWrapping="Wrap"
-               Text="AMD ADLX SDK is licensed by Advanced Micro Devices, Inc. and is not part of the MIT-licensed AmdPanel codebase. See third_party/ADLXSDK/ADLX SDK License Agreement.pdf for terms."/>
+               Text="AmdPanel is licensed under GNU GPL v3.0. AMD ADLX SDK is licensed separately by Advanced Micro Devices, Inc. — see third_party/ADLXSDK/ADLX SDK License Agreement.pdf for ADLX terms."/>
   </DockPanel>
 </Window>

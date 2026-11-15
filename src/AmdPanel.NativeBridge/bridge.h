@@ -91,51 +91,6 @@ struct BridgeGpuCapabilities
     int32_t presetTuningSupported;
     int32_t smartAccessMemorySupported;
     int32_t performanceMonitoringSupported;
-
-    // === v1.0.1: Текущие значения (sync с уже активными настройками AMD Adrenalin) ===
-    // Эти поля заполняются при ADLXBridge_GetGpuCapabilities через вызовы
-    // IsEnabled() / GetSharpness() / GetMinFPS() / GetMaxFPS() для каждого 3D-фича-объекта.
-    // Значение -1 означает "не поддерживается / не удалось прочитать".
-    int32_t antiLagEnabled;
-    int32_t chillEnabled;
-    int32_t chillMinFps;        // adlx_int from IADLX3DChill::GetMinFPS
-    int32_t chillMaxFps;        // adlx_int from IADLX3DChill::GetMaxFPS
-    int32_t imageSharpeningEnabled;
-    int32_t imageSharpeningSharpness;  // adlx_int from IADLX3DImageSharpening::GetSharpness
-    int32_t boostEnabled;
-    int32_t enhancedSyncEnabled;
-    int32_t waitForVerticalRefreshEnabled;
-    int32_t frameRateTargetEnabled;
-    int32_t morphologicalAntiAliasingEnabled;
-    int32_t anisotropicFilteringEnabled;  // 0=Off, 1=2x, 2=4x, 3=8x, 4=16x (index)
-    int32_t tessellationEnabled;          // 0=Optimized, 1..4 = 8x..64x (index)
-};
-
-/// <summary>
-/// v1.0.1: Метрики GPU в реальном времени (для вкладки Performance).
-/// Заполняется через IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics
-/// на каждой итерации polling'а.
-/// </summary>
-struct BridgeGpuMetrics
-{
-    int32_t index;
-    double  gpuTemperature;     // GPUTemperature (adlx_double, °C)
-    double  gpuUsage;           // GPUUsage (adlx_double, %)
-    int32_t gpuClockMHz;        // GPUClockSpeed (adlx_int, MHz)
-    int32_t vramClockMHz;       // GPUVRAMClockSpeed (adlx_int, MHz)
-    int32_t fanSpeedRpm;        // GPUFanSpeed (adlx_int, RPM)
-    double  powerDrawWatts;     // GPUPower (adlx_double, W)
-    double  totalBoardPower;    // GPUTotalBoardPower (adlx_double, W)
-    int32_t gpuVoltage;         // GPUVoltage (adlx_int, mV) - если доступно
-    // Валидность каждого поля (0 = не поддерживается на этом GPU)
-    int32_t temperatureValid;
-    int32_t usageValid;
-    int32_t clockValid;
-    int32_t vramClockValid;
-    int32_t fanSpeedValid;
-    int32_t powerValid;
-    int32_t totalBoardPowerValid;
-    int32_t voltageValid;
 };
 
 //-------------------------------------------------------------------------
@@ -190,16 +145,6 @@ struct BridgeDisplayInfo
     int32_t     freeSyncMaxHz;
     int32_t     gpuScalingSupported;
     int32_t     gpuScalingEnabled;
-
-    // === v1.0.1: Custom Color (IADLXDisplayCustomColor) ===
-    // Текущие значения яркости/контраста/насыщенности - используются для
-    // инициализации DisplayColorPageViewModel значениями из AMD Adrenalin.
-    // -1 = не поддерживается / не удалось прочитать.
-    int32_t     customColorSupported;
-    int32_t     customColorBrightness;    // adlx_int, диапазон обычно 0..100
-    int32_t     customColorContrast;      // adlx_int, диапазон 0..100
-    int32_t     customColorSaturation;    // adlx_int, диапазон 0..100
-    int32_t     customColorHue;           // adlx_int, диапазон 0..360
 };
 
 //-------------------------------------------------------------------------
@@ -254,12 +199,55 @@ BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayPixelFormat(int32_t displayI
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayColorDepth(int32_t displayIndex, int32_t* currentDepth, int32_t* supportedMask);
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayColorDepth(int32_t displayIndex, int32_t newDepth);
 
-// === v1.0.1: Performance metrics (для вкладки Performance Monitoring) ===
-// Читает текущие метрики GPU через IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics.
-// Заполняет BridgeGpuMetrics полями: temperature, usage, clock, vramClock, fanSpeed, power.
-// Каждое поле имеет *Valid флаг (0 = не поддерживается на этом GPU, например
-// Polaris не отдаёт GPUVoltage).
-BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIndex, BridgeGpuMetrics* outMetrics);
+// === v1.1.0: Display Custom Color setters (через IADLXDisplayCustomColor) ===
+// Атомарные операции - не требуют watchdog (не меняют timing сигнала).
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayBrightness(int32_t displayIndex, int32_t value);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayContrast(int32_t displayIndex, int32_t value);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplaySaturation(int32_t displayIndex, int32_t value);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetDisplayHue(int32_t displayIndex, int32_t value);
+
+/// <summary>
+/// v1.1.0: Диапазон для CustomColor параметра (из ADLX_IntRange).
+/// recommendedDefault = (min + max) / 2 — используется как "factory default" при Reset.
+/// </summary>
+struct BridgeCustomColorRange
+{
+    int32_t minValue;
+    int32_t maxValue;
+    int32_t step;
+    int32_t recommendedDefault;
+};
+
+/// <summary>
+/// v1.0.1: Метрики GPU в реальном времени (для вкладки Performance).
+/// Заполняется через IADLXPerformanceMonitoringServices::GetCurrentGPUMetrics.
+/// </summary>
+struct BridgeGpuMetrics
+{
+    int32_t index;
+    double  gpuTemperature;
+    double  gpuUsage;
+    int32_t gpuClockMHz;
+    int32_t vramClockMHz;
+    int32_t fanSpeedRpm;
+    double  powerDrawWatts;
+    double  totalBoardPower;
+    int32_t gpuVoltage;
+    int32_t temperatureValid;
+    int32_t usageValid;
+    int32_t clockValid;
+    int32_t vramClockValid;
+    int32_t fanSpeedValid;
+    int32_t powerValid;
+    int32_t totalBoardPowerValid;
+    int32_t voltageValid;
+};
+
+// === v1.1.0: Получение диапазонов CustomColor для слайдеров ===
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayBrightnessRange(int32_t displayIndex, BridgeCustomColorRange* outRange);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayContrastRange(int32_t displayIndex, BridgeCustomColorRange* outRange);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplaySaturationRange(int32_t displayIndex, BridgeCustomColorRange* outRange);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayHueRange(int32_t displayIndex, BridgeCustomColorRange* outRange);
 
 // Освобождение любого буфера, выделенного мостом
 BRIDGE_API void BRIDGE_CALL ADLXBridge_FreeBuffer(void* buffer);
