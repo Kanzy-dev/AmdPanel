@@ -109,9 +109,18 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         {
             if (SetField(ref _selectedProgram, value))
             {
+                UpdateSelectedApplication();
                 UpdateParameterDescription();
             }
         }
+    }
+
+    // Выбранный профиль приложения для работы с настройками
+    private ApplicationProfileItem? _selectedApplication;
+    public ApplicationProfileItem? SelectedApplication
+    {
+        get => _selectedApplication;
+        set => SetField(ref _selectedApplication, value);
     }
 
     public ICommand BrowseProgramCommand { get; }
@@ -145,6 +154,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
 
             InstalledPrograms.Add(appInfo);
             SelectedProgram = appInfo;
+            // SelectedApplication будет установлен в сеттере SelectedProgram через UpdateSelectedApplication()
         }
     }
 
@@ -154,6 +164,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         {
             InstalledPrograms.Remove(SelectedProgram);
             SelectedProgram = null;
+            SelectedApplication = null;
             SelectedParameterDescription = string.Empty;
             SelectedParameterUsage = string.Empty;
         }
@@ -245,36 +256,36 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         _globalProfile.ApplicationProfiles.Add(ap);
         ApplicationProfiles.Add(new ApplicationProfileItem(ap));
         _profileService.Save(_globalProfile);
-        SelectedProgram = ApplicationProfiles.Last();
+        SelectedApplication = ApplicationProfiles.Last();
     }
 
     /// <summary> Удаляет выбранный программный профиль. </summary>
     public void RemoveSelectedApplication()
     {
-        if (SelectedProgram is null || _globalProfile is null || _profileService is null) return;
-        _globalProfile.ApplicationProfiles.Remove(SelectedProgram.Profile);
-        ApplicationProfiles.Remove(SelectedProgram);
+        if (SelectedApplication is null || _globalProfile is null || _profileService is null) return;
+        _globalProfile.ApplicationProfiles.Remove(SelectedApplication.Profile);
+        ApplicationProfiles.Remove(SelectedApplication);
         _profileService.Save(_globalProfile);
-        SelectedProgram = ApplicationProfiles.FirstOrDefault();
+        SelectedApplication = ApplicationProfiles.FirstOrDefault();
     }
 
     /// <summary> Сохраняет отредактированные в UI настройки обратно в профиль приложения. </summary>
     public void PersistSelectedApplication()
     {
-        if (SelectedProgram is null || _profileService is null) return;
-        SelectedProgram.Profile.ThreeDSettings.AntiLag = AppAntiLag;
-        SelectedProgram.Profile.ThreeDSettings.Chill = AppChill;
-        SelectedProgram.Profile.ThreeDSettings.Sharpness = AppSharpnessEnabled ? AppSharpness : 0;
-        SelectedProgram.Profile.ThreeDSettings.VSyncMode = AppVSync;
-        SelectedProgram.Profile.ThreeDSettings.TessLevel = AppTess;
-        SelectedProgram.Profile.ThreeDSettings.AnisotropicLevel = AppAniso;
-        SelectedProgram.Profile.ThreeDSettings.Boost = AppBoost;
+        if (SelectedApplication is null || _profileService is null) return;
+        SelectedApplication.Profile.ThreeDSettings.AntiLag = AppAntiLag;
+        SelectedApplication.Profile.ThreeDSettings.Chill = AppChill;
+        SelectedApplication.Profile.ThreeDSettings.Sharpness = AppSharpnessEnabled ? AppSharpness : 0;
+        SelectedApplication.Profile.ThreeDSettings.VSyncMode = AppVSync;
+        SelectedApplication.Profile.ThreeDSettings.TessLevel = AppTess;
+        SelectedApplication.Profile.ThreeDSettings.AnisotropicLevel = AppAniso;
+        SelectedApplication.Profile.ThreeDSettings.Boost = AppBoost;
         _profileService.Save(_globalProfile!);
     }
 
     private void RefreshApplicationEditPanel()
     {
-        if (SelectedProgram is null)
+        if (SelectedApplication is null)
         {
             AppAntiLag = false;
             AppChill = false;
@@ -287,7 +298,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
             UpdateParameterDescription();
             return;
         }
-        var t = SelectedProgram.Profile.ThreeDSettings;
+        var t = SelectedApplication.Profile.ThreeDSettings;
         // Без SetField чтобы не помечать Dirty при программном заполнении
         _appAntiLag = t.AntiLag;
         OnPropertyChanged(nameof(AppAntiLag));
