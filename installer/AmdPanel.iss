@@ -44,7 +44,7 @@ Source: "..\build\NativeBridge\AmdPanel.NativeBridge.pdb"; DestDir: "{app}\lib";
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commonappdata}\Microsoft\Windows\Start Menu\Programs\Startup\AmdPanel"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/minimize"
+Name: "{commonappdata}\Microsoft\Windows\Start Menu\Programs\Startup\AmdPanel"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/minimize"; Tasks: autostart
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Tasks: launchapp
@@ -106,14 +106,6 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssDone then
   begin
-    // Create startup shortcut if auto-start is enabled
-    if IsTaskSelected('autostart') then
-    begin
-      CreateShortcut(
-        ExpandConstant('{commonappdata}\Microsoft\Windows\Start Menu\Programs\Startup\AmdPanel.lnk'),
-        ExpandConstant('{app}\AmdPanel.exe'),
-        '', '', '', SW_SHOWNORMAL, 0
-      );
-    end;
+    // Startup shortcut is already created in [Icons] section when autostart task is selected
   end;
 end;
