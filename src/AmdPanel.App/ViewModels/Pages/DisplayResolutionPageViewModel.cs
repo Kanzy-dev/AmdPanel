@@ -166,7 +166,7 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         if (SelectedResolution is null) return new DisplayApplyResult(-1, false, false, "Не выбрано разрешение");
         string device = _display.DisplayName;
         var mgr = _hub.DisplayModeManager;
-        var result = await mgr.ApplyDisplayMode(device,
+        var result = await mgr.ApplyModeAsync(device,
             SelectedResolution.Width, SelectedResolution.Height,
             SelectedRefresh, SelectedBpc);
         
