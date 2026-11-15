@@ -38,7 +38,7 @@ public sealed class ContextMenuService : IDisposable
     public void SetContextMenuEnabled(bool enabled)
     {
         var settings = _configService.LoadAppSettings();
-        settings.EnableDesktopContextMenu = enabled;
+        settings = settings with { EnableDesktopContextMenu = enabled };
         _configService.SaveAppSettings(settings);
 
         if (enabled)
@@ -118,8 +118,8 @@ public sealed class ContextMenuService : IDisposable
             if (Environment.OSVersion.Version >= new Version(6, 0)) // Windows Vista и выше
             {
                 var notifyPtr = new IntPtr(0x8000000); // HWND_BROADCAST
-                var message = 0x0015; // WM_SETTINGCHANGE
-                var wParam = new IntPtr(0); // SPI_SETNONCLIENTREGISTRY
+                var message = (uint)0x0015; // WM_SETTINGCHANGE
+                var wParam = new IntPtr((uint)0); // SPI_SETNONCLIENTREGISTRY
                 var lParam = Marshal.StringToHGlobalAuto("Environment");
 
                 // Отправляем сообщение всем окнам

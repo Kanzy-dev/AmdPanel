@@ -16,7 +16,7 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
     public string PageKey => "page.resolution";
 
     private readonly UiHardwareHub _hub;
-    private readonly DisplayInfo _display;
+    private DisplayInfo _display;
 
     public DisplayResolutionPageViewModel(UiHardwareHub hub, DisplayInfo display)
     {
@@ -201,9 +201,30 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         {
             // Получаем текущий режим через Win32 API
             var currentMode = User32Display.QueryCurrentMode(_display.DisplayName);
-            _display.CurrentWidth = currentMode.dmPelsWidth;
-            _display.CurrentHeight = currentMode.dmPelsHeight;
-            _display.CurrentRefreshHz = currentMode.dmDisplayFrequency;
+            _display = new DisplayInfo
+            {
+                Index = _display.Index,
+                Name = _display.Name,
+                DisplayName = _display.DisplayName,
+                ManufacturerId = _display.ManufacturerId,
+                ProductCode = _display.ProductCode,
+                SerialNumber = _display.SerialNumber,
+                RawEdid = _display.RawEdid,
+                EdidLength = _display.EdidLength,
+                PortType = _display.PortType,
+                IsPrimary = _display.IsPrimary,
+                Connected = _display.Connected,
+                CurrentWidth = currentMode.dmPelsWidth,
+                CurrentHeight = currentMode.dmPelsHeight,
+                CurrentRefreshHz = currentMode.dmDisplayFrequency,
+                CurrentColorDepth = _display.CurrentColorDepth,
+                CurrentPixelFormat = _display.CurrentPixelFormat,
+                CurrentScalingMode = _display.CurrentScalingMode,
+                FreeSyncSupported = _display.FreeSyncSupported,
+                FreeSyncEnabled = _display.FreeSyncEnabled,
+                FreeSyncMinHz = _display.FreeSyncMinHz,
+                FreeSyncMaxHz = _display.FreeSyncMaxHz
+            };
             
             // Обновляем UI
             OnPropertyChanged(nameof(SelectedResolution));

@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -197,7 +198,7 @@ public sealed partial class AppUpdateService : ViewModelBase, IDisposable
     /// Открыть страницу загрузки обновления
     /// </summary>
     [RelayCommand]
-    private void OpenUpdatePage()
+    public void OpenUpdatePage()
     {
         try
         {

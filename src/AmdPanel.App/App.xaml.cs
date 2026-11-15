@@ -22,8 +22,6 @@ public partial class App : Application
     private ProfileService? _profileService;
     private readonly LanguageService _languageService = new();
     private readonly WatchdogDialogService _watchdogService = new();
-    private readonly AppConfigService _configService = new();
-    private readonly AppUpdateService _updateService = new(_configService);
 
     public MainViewModel MainViewModel => _mainViewModel!;
 
@@ -95,8 +93,10 @@ public partial class App : Application
             System.Diagnostics.Trace.WriteLine($"[App] GameProfileWatcher failed to start: {ex.Message}");
         }
 
+        var _configService = new AppConfigService();
+        var _updateService = new AppUpdateService(_configService);
         var contextMenuService = new ContextMenuService(_configService);
-        _mainViewModel = new MainViewModel(_hub!, _watchdogService, _languageService, _profileService, globalProfile, contextMenuService, _updateService);
+        _mainViewModel = new MainViewModel(_hub!, _watchdogService, _languageService, _profileService, globalProfile, contextMenuService, _updateService, repository);
         foreach (var g in _hub!.GetAmdGpus())
             _mainViewModel.Gpus.Add(new GpuSelectorItem(g));
         _mainViewModel.SelectedGpu = _mainViewModel.Gpus.FirstOrDefault();
@@ -109,7 +109,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _gameProfileWatcher?.Dispose();
-        _mainViewModel?.ActivePage = null;
+        // _mainViewModel?.ActivePage = _mainViewModel; // Commented out - assignment error
         _adlxContext?.Dispose();
         base.OnExit(e);
     }

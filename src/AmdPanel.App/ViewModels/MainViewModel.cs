@@ -8,6 +8,7 @@ using AmdPanel.Core.Hardware;
 using AmdPanel.Core.Hardware.Capability;
 using AmdPanel.Core.Profiles.Models;
 using AmdPanel.Core.Profiles.Services;
+using AmdPanel.Core.Profiles.Storage;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AmdPanel.App.ViewModels;
@@ -31,10 +32,11 @@ public sealed class MainViewModel : ViewModelBase
     private readonly GlobalProfile _globalProfile;
     private readonly ContextMenuService _contextMenuService;
     private readonly AppUpdateService _updateService;
+    private readonly IProfileRepository _profileRepository;
 
     public MainViewModel(UiHardwareHub hub, WatchdogDialogService watchdogService,
         LanguageService languageService, ProfileService profileService, GlobalProfile globalProfile,
-        ContextMenuService contextMenuService, AppUpdateService updateService)
+        ContextMenuService contextMenuService, AppUpdateService updateService, IProfileRepository profileRepository)
     {
         _hub = hub;
         _watchdogService = watchdogService;
@@ -43,6 +45,7 @@ public sealed class MainViewModel : ViewModelBase
         _globalProfile = globalProfile;
         _contextMenuService = contextMenuService;
         _updateService = updateService;
+        _profileRepository = profileRepository;
         _hub.DisplayModeManager.WatchdogCallback = _watchdogService.OnDisplayChangeRequest;
         ApplyCommand = new RelayCommand(async () => await ApplyAsync(), () => CanApply);
         CancelCommand = new RelayCommand(Cancel, () => IsDirty);
@@ -338,7 +341,7 @@ public sealed class MainViewModel : ViewModelBase
 
         ActivePage = SelectedNode.PageKey switch
         {
-            "page.3dSettings"   => new ThreeDSettingsPageViewModel(gpu.Index, caps, _profileService, _globalProfile),
+            "page.3dSettings"   => new ThreeDSettingsPageViewModel(gpu.Index, caps, _profileService, _globalProfile, _profileRepository),
             "page.resolution"   => new DisplayResolutionPageViewModel(_hub, _hub.GetActiveDisplays().First()),
             "page.color"        => new DisplayColorPageViewModel(_hub, _hub.GetActiveDisplays().First()),
             "page.freesync"     => new FreeSyncPageViewModel(_hub, _hub.GetActiveDisplays().First()),

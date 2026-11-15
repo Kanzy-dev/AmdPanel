@@ -288,23 +288,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         _profileService.Save(_globalProfile!);
         
         // Дополнительно сохранить через ProfileRepository для атомарного сохранения
-        var profileManager = _profileRepository.LoadProfiles();
-        profileManager.Applications = ApplicationProfiles.Select(item => new ApplicationProfileItem
-        {
-            ExecutablePath = item.Profile.ExecutablePath,
-            DisplayName = item.Profile.DisplayName,
-            AntiLag = item.Profile.ThreeDSettings.AntiLag,
-            Chill = item.Profile.ThreeDSettings.Chill,
-            ChillMinFps = item.Profile.ThreeDSettings.ChillMinFps,
-            ChillMaxFps = item.Profile.ThreeDSettings.ChillMaxFps,
-            ImageSharpening = item.Profile.ThreeDSettings.Sharpness > 0,
-            Sharpness = item.Profile.ThreeDSettings.Sharpness,
-            Boost = item.Profile.ThreeDSettings.Boost,
-            VSyncMode = item.Profile.ThreeDSettings.VSyncMode,
-            AnisoLevel = item.Profile.ThreeDSettings.AnisoLevel,
-            TessLevel = item.Profile.ThreeDSettings.TessLevel
-        }).ToList();
-        _profileRepository.SaveProfiles(profileManager);
+        _profileRepository.Save(_globalProfile!);
     }
 
     /// <summary>
