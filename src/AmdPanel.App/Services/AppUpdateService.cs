@@ -13,7 +13,7 @@ namespace AmdPanel.App.Services;
 /// <summary>
 /// Сервис автоматической проверки обновлений через GitHub Releases
 /// </summary>
-public sealed class AppUpdateService : ViewModelBase, IDisposable
+public sealed partial class AppUpdateService : ViewModelBase, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly IAppConfigService _configService;

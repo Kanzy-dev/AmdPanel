@@ -27,13 +27,12 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     private readonly GlobalProfile _globalProfile;
     private readonly ProfileService? _profileService;
     private readonly IProfileRepository _profileRepository;
-    private readonly IProfileRepository _profileRepository;
 
     /// <summary>
     /// ctor для Stage 2 (без ProfileService — Program Settings tab недоступен).
     /// </summary>
     public ThreeDSettingsPageViewModel(int gpuIndex, GpuCapabilities caps)
-        : this(gpuIndex, caps, null!, null) { }
+        : this(gpuIndex, caps, null!, null!, null!) { }
 
     /// <summary> ctor для Stage 3 — с поддержкой Program Settings. </summary>
     public ThreeDSettingsPageViewModel(int gpuIndex, GpuCapabilities caps,
