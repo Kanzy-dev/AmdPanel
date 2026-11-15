@@ -114,6 +114,9 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\AmdPanel.iss"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           
+          # Create dist directory if it doesn't exist
+          New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+          
           # Move the installer to dist directory
           $installerName = "AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe"
           Move-Item "installer\AmdPanel-Setup-x64.exe" "dist\$installerName" -Force
