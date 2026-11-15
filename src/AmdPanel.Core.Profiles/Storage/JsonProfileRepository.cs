@@ -151,4 +151,3 @@ public sealed class JsonProfileRepository : IProfileRepository
         return _configService.LoadAppSettings();
     }
 }
-}
