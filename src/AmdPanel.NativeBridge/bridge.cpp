@@ -629,9 +629,12 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCurrentState(int32_t 
         IADLX3DTessellationPtr tess;
         if (ADLX_OK == d3dSvc->GetTessellation(gpu.GetPtr(), &tess) && tess)
         {
-            b = false;
-            ADLX_RESULT res = tess->IsEnabled(&b);
-            if (res == ADLX_OK) outState->tessellationEnabled = b ? 1 : 0;
+            // Get tessellation mode to determine if it's enabled
+            ADLX_TESSELLATION_MODE mode = T_MODE_AMD_OPTIMIZED;
+            if (ADLX_OK == tess->GetMode(&mode))
+            {
+                outState->tessellationEnabled = (mode != T_MODE_AMD_OPTIMIZED) ? 1 : 0;
+            }
             
             // Чтение уровня tessellation
             if (b)
@@ -810,7 +813,9 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetWaitForVRefresh(int32_t 
     IADLX3DWaitForVerticalRefreshPtr vsync;
     if (ADLX_OK != d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &vsync) || !vsync) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = vsync->SetEnabled(enabled ? true : false);
+    // Convert enabled flag to ADLX_WAIT_FOR_VERTICAL_REFRESH_MODE
+    ADLX_WAIT_FOR_VERTICAL_REFRESH_MODE mode = enabled ? WFVR_ALWAYS_ON : WFVR_ALWAYS_OFF;
+    ADLX_RESULT res = vsync->SetMode(mode);
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -833,8 +838,38 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetTessellation(int32_t gpu
     IADLX3DTessellationPtr tess;
     if (ADLX_OK != d3dSvc->GetTessellation(gpu.GetPtr(), &tess) || !tess) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = tess->SetEnabled(enabled ? true : false);
-    if (res == ADLX_OK && enabled)
+    // Set tessellation mode and level based on enabled flag
+    ADLX_RESULT res = ADLX_OK;
+    if (enabled)
+    {
+        // Set mode to override app settings
+        ADLX_TESSELLATION_MODE mode = T_MODE_OVERRIDE_APP_SETTINGS;
+        res = tess->SetMode(mode);
+        if (res != ADLX_OK) return BRIDGE_FAIL;
+        
+        // Set level based on input parameter
+        ADLX_TESSELLATION_LEVEL level = T_LEVEL_OFF;
+        switch (level)
+        {
+            case 1: level = T_LEVEL_2X; break;
+            case 2: level = T_LEVEL_4X; break;
+            case 3: level = T_LEVEL_6X; break;
+            case 4: level = T_LEVEL_8X; break;
+            case 5: level = T_LEVEL_16X; break;
+            case 6: level = T_LEVEL_32X; break;
+            case 7: level = T_LEVEL_64X; break;
+            default: level = T_LEVEL_OFF; break;
+        }
+        res = tess->SetLevel(level);
+        if (res != ADLX_OK) return BRIDGE_FAIL;
+    }
+    else
+    {
+        // Set mode to AMD optimized (effectively disabled)
+        ADLX_TESSELLATION_MODE mode = T_MODE_AMD_OPTIMIZED;
+        res = tess->SetMode(mode);
+        if (res != ADLX_OK) return BRIDGE_FAIL;
+    }
     {
         ADLX_TESSELLATION_LEVEL adlxLevel = T_LEVEL_OFF;
         switch (level)
@@ -1666,224 +1701,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIn
     return BRIDGE_OK;
 }
 
-//=========================================================================
-// Free buffer
-//=========================================================================
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DAntiLagPtr antiLag;
-    if (ADLX_OK != d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) || !antiLag) return BRIDGE_FAIL;
-    
-    ADLX_RESULT res = antiLag->SetEnabled(enabled ? true : false);
-    return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
-}
 
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetChill(int32_t gpuIndex, int enabled, int minFps, int maxFps)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DChillPtr chill;
-    if (ADLX_OK != d3dSvc->GetChill(gpu.GetPtr(), &chill) || !chill) return BRIDGE_FAIL;
-    
-    if (enabled)
-    {
-        ADLX_RESULT res = chill->SetEnabled(true);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-        res = chill->SetMinFPS((adlx_int)minFps);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-        res = chill->SetMaxFPS((adlx_int)maxFps);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    else
-    {
-        ADLX_RESULT res = chill->SetEnabled(false);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    
-    return BRIDGE_OK;
-}
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetImageSharpening(int32_t gpuIndex, int enabled, int sharpness)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DImageSharpeningPtr imgSharp;
-    if (ADLX_OK != d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) || !imgSharp) return BRIDGE_FAIL;
-    
-    ADLX_RESULT res = imgSharp->SetEnabled(enabled ? true : false);
-    if (res != ADLX_OK) return BRIDGE_FAIL;
-    
-    if (enabled)
-    {
-        res = imgSharp->SetSharpness((adlx_int)sharpness);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    
-    return BRIDGE_OK;
-}
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetBoost(int32_t gpuIndex, int enabled)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DBoostPtr boost;
-    if (ADLX_OK != d3dSvc->GetBoost(gpu.GetPtr(), &boost) || !boost) return BRIDGE_FAIL;
-    
-    ADLX_RESULT res = boost->SetEnabled(enabled ? true : false);
-    return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
-}
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetWaitForVRefresh(int32_t gpuIndex, int enabled)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DWaitForVerticalRefreshPtr vsync;
-    if (ADLX_OK != d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &vsync) || !vsync) return BRIDGE_FAIL;
-    
-    ADLX_RESULT res = vsync->SetEnabled(enabled ? true : false);
-    return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
-}
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetTessellation(int32_t gpuIndex, int enabled, int level)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DTessellationPtr tess;
-    if (ADLX_OK != d3dSvc->GetTessellation(gpu.GetPtr(), &tess) || !tess) return BRIDGE_FAIL;
-    
-    if (enabled)
-    {
-        // Convert our level to ADLX_TESSELLATION_LEVEL
-        ADLX_TESSELLATION_LEVEL adlxLevel = T_LEVEL_OFF;
-        switch (level)
-        {
-            case 1: adlxLevel = T_LEVEL_2X; break;
-            case 2: adlxLevel = T_LEVEL_4X; break;
-            case 3: adlxLevel = T_LEVEL_6X; break;
-            case 4: adlxLevel = T_LEVEL_8X; break;
-            case 5: adlxLevel = T_LEVEL_16X; break;
-            case 6: adlxLevel = T_LEVEL_32X; break;
-            case 7: adlxLevel = T_LEVEL_64X; break;
-            default: adlxLevel = T_LEVEL_OFF; break;
-        }
-        
-        ADLX_RESULT res = tess->SetEnabled(true);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-        res = tess->SetLevel(adlxLevel);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    else
-    {
-        ADLX_RESULT res = tess->SetEnabled(false);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    
-    return BRIDGE_OK;
-}
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAnisotropicFiltering(int32_t gpuIndex, int enabled, int level)
-{
-    if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
-    
-    IADLXSystem* sys = g_bridgeHelper.GetSystemServices();
-    if (!sys) return BRIDGE_FAIL;
-    IADLXGPUListPtr gpuList;
-    if (ADLX_OK != sys->GetGPUs(&gpuList) || !gpuList) return BRIDGE_FAIL;
-    adlx_uint cnt = gpuList->Size();
-    if (gpuIndex < 0 || (adlx_uint)gpuIndex >= cnt) return BRIDGE_INVALID_ARGS;
-    IADLXGPUPtr gpu;
-    if (ADLX_OK != gpuList->At((adlx_uint)gpuIndex, &gpu) || !gpu) return BRIDGE_FAIL;
-    
-    IADLX3DSettingsServicesPtr d3dSvc;
-    if (ADLX_OK != sys->Get3DSettingsServices(&d3dSvc) || !d3dSvc) return BRIDGE_FAIL;
-    
-    IADLX3DAnisotropicFilteringPtr aniso;
-    if (ADLX_OK != d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) || !aniso) return BRIDGE_FAIL;
-    
-    ADLX_RESULT res = aniso->SetEnabled(enabled ? true : false);
-    if (res != ADLX_OK) return BRIDGE_FAIL;
-    
-    if (enabled)
-    {
-        res = aniso->SetLevel((adlx_int)level);
-        if (res != ADLX_OK) return BRIDGE_FAIL;
-    }
-    
-    return BRIDGE_OK;
-}
 
 //=========================================================================
 // Free buffer
