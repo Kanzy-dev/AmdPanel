@@ -171,9 +171,16 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
             SelectedParameterDescription = string.Empty;
             SelectedParameterUsage = string.Empty;
         }
-    }
+    }    private void UpdateSelectedApplication()
+    {
+        // Загружаем список программ при первом обращении к этой вкладке
+        if (InstalledPrograms.Count == 0)
+        {
+            LoadInstalledApps();
+        }
 
-
+        if (SelectedProgram is not null)
+        {
             var existing = ApplicationProfiles.FirstOrDefault(ap => ap.Profile.ProcessName == SelectedProgram.ProcessName);
             if (existing is null && _profileService is not null && _globalProfile is not null)
             {
