@@ -55,19 +55,19 @@ public sealed class AmdDriverDownloader : IDisposable
             CookieContainer = new System.Net.CookieContainer(),
         });
 
-        // v1.0.1 fix: используем ParseAdd/TryParseAdd вместо конструктора ProductInfoHeaderValue
-        // Конструктор new ProductInfoHeaderValue(name, version) не принимает UA с комментариями
-        // в скобках и крашит с FormatException. UserAgent.ParseAdd корректно разбивает строкку
-        // на product tokens: Mozilla/5.0 + (Windows NT...) + AppleWebKit/537.36 + ... + Safari/537.36
+        // v1.1.0 fix: используем TryParseAdd вместо конструктора ProductInfoHeaderValue.
+        // Конструктор new ProductInfoHeaderValue(name, version) не принимает UA с
+        // комментариями в скобках и крашит с FormatException. TryParseAdd корректно
+        // разбивает строку на product tokens: Mozilla/5.0 + (Windows NT...) +
+        // AppleWebKit/537.36 + ... + Safari/537.36.
         if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(UserAgentString))
         {
-            // Fallback на минимальный UA если парсер всё же не принял
             client.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0");
         }
 
         // Referer обязателен - без него AMD отдаёт 403 на большинстве URL
         try { client.DefaultRequestHeaders.Referrer = new Uri("https://amd.com"); }
-        catch (ArgumentException) { /* ignore - referer optional fallback */ }
+        catch (ArgumentException) { /* ignore */ }
 
         try
         {
@@ -84,6 +84,7 @@ public sealed class AmdDriverDownloader : IDisposable
                 new MediaTypeWithQualityHeaderValue("text/html"));
         }
         catch (ArgumentException) { /* ignore */ }
+
         client.Timeout = TimeSpan.FromMinutes(15);
         return client;
     }

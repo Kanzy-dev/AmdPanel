@@ -1,0 +1,60 @@
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+AmdPanel - Lightweight native control panel for AMD GPUs
+Copyright (C) 2026 Kanzy-dev
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Full text of GNU GPL v3.0: https://www.gnu.org/licenses/gpl-3.0.txt
+
+================================================================================
+
+THIRD-PARTY NOTICES
+-------------------
+
+1. AMD ADLX SDK (third_party/ADLXSDK/)
+   Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+
+   The AMD ADLX SDK is NOT covered by the GNU GPL v3.0 license above.
+   It is distributed under the terms of the "ADLX SDK License Agreement"
+   available at third_party/ADLXSDK/ADLX SDK License Agreement.pdf.
+
+   Users and redistributors of AmdPanel must comply with AMD's license terms
+   when redistributing or using the ADLX SDK binaries (including the
+   amdadlx64.dll system library that ships with AMD graphics drivers).
+
+   Source: https://gpuopen.com/amd-adlx-sdk/
+
+2. SharpCompress (NuGet package, used in AmdPanel.Core.DriverManager)
+   Copyright (c) Adam Hathcock
+   Licensed under the MIT License.
+   Source: https://github.com/adamhathcock/sharpcompress
+
+3. CommunityToolkit.Mvvm (NuGet package, used in AmdPanel.App)
+   Copyright (c) .NET Foundation and Contributors
+   Licensed under the MIT License.
+   Source: https://github.com/CommunityToolkit/dotnet
+
+4. System.Management (NuGet package)
+   Copyright (c) .NET Foundation and Contributors
+   Licensed under the MIT License.
+
+The MIT-licensed third-party packages remain under their original licenses
+and are not affected by AmdPanel's GPL v3.0 license. GPL v3.0 applies only
+to the AmdPanel source code authored by Kanzy-dev and contributors.

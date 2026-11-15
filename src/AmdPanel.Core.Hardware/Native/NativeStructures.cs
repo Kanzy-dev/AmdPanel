@@ -50,21 +50,6 @@ public struct BridgeGpuCapabilities
     public int SmartAccessMemorySupported;
     public int PerformanceMonitoringSupported;
 
-    // === v1.0.1: Текущие значения (sync с AMD Adrenalin) ===
-    public int AntiLagEnabled;
-    public int ChillEnabled;
-    public int ChillMinFps;
-    public int ChillMaxFps;
-    public int ImageSharpeningEnabled;
-    public int ImageSharpeningSharpness;
-    public int BoostEnabled;
-    public int EnhancedSyncEnabled;
-    public int WaitForVerticalRefreshEnabled;
-    public int FrameRateTargetEnabled;
-    public int MorphologicalAntiAliasingEnabled;
-    public int AnisotropicFilteringEnabled;
-    public int TessellationEnabled;
-
     public bool IsSupported(string feature) => feature switch
     {
         "AntiLag"          => AntiLagSupported          == 1,
@@ -90,32 +75,6 @@ public struct BridgeGpuCapabilities
         "PerfMonitoring"   => PerformanceMonitoringSupported == 1,
         _ => false
     };
-}
-
-/// <summary>
-/// v1.0.1: Метрики GPU в реальном времени.
-/// Каждое поле имеет *Valid флаг (0 = не поддерживается на этом GPU).
-/// </summary>
-[StructLayout(LayoutKind.Sequential, Pack = 8)]
-public struct BridgeGpuMetrics
-{
-    public int   Index;
-    public double GpuTemperature;
-    public double GpuUsage;
-    public int   GpuClockMHz;
-    public int   VramClockMHz;
-    public int   FanSpeedRpm;
-    public double PowerDrawWatts;
-    public double TotalBoardPower;
-    public int   GpuVoltage;
-    public int TemperatureValid;
-    public int UsageValid;
-    public int ClockValid;
-    public int VramClockValid;
-    public int FanSpeedValid;
-    public int PowerValid;
-    public int TotalBoardPowerValid;
-    public int VoltageValid;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -161,7 +120,7 @@ public struct BridgeDisplayInfo
     public int GpuScalingSupported;
     public int GpuScalingEnabled;
 
-    // v1.0.1: Custom Color (из IADLXDisplayCustomColor)
+    // v1.1.0: Custom Color (из IADLXDisplayCustomColor)
     public int CustomColorSupported;
     public int CustomColorBrightness;
     public int CustomColorContrast;
@@ -184,4 +143,43 @@ public struct BridgeDisplayModeList
 {
     public int Count;
     public IntPtr Items; // pointer to BridgeDisplayMode[Count]
+}
+
+/// <summary>
+/// v1.1.0: Диапазон CustomColor параметра (Brightness/Contrast/Saturation/Hue).
+/// recommendedDefault = (min + max) / 2 — используется как "factory default" при Reset.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public struct BridgeCustomColorRange
+{
+    public int MinValue;
+    public int MaxValue;
+    public int Step;
+    public int RecommendedDefault;
+}
+
+/// <summary>
+/// v1.0.1: Метрики GPU в реальном времени.
+/// Каждое поле имеет *Valid флаг (0 = не поддерживается на этом GPU).
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public struct BridgeGpuMetrics
+{
+    public int    Index;
+    public double GpuTemperature;
+    public double GpuUsage;
+    public int    GpuClockMHz;
+    public int    VramClockMHz;
+    public int    FanSpeedRpm;
+    public double PowerDrawWatts;
+    public double TotalBoardPower;
+    public int    GpuVoltage;
+    public int TemperatureValid;
+    public int UsageValid;
+    public int ClockValid;
+    public int VramClockValid;
+    public int FanSpeedValid;
+    public int PowerValid;
+    public int TotalBoardPowerValid;
+    public int VoltageValid;
 }

@@ -29,6 +29,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <!-- v1.1.0: System.Drawing.Common для Icon.ExtractAssociatedIcon в InstalledAppsScanner -->
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

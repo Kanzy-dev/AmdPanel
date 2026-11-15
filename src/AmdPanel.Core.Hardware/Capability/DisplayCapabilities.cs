@@ -33,9 +33,11 @@ public sealed class DisplayInfo
     public bool GpuScalingSupported { get; init; }
     public bool GpuScalingEnabled { get; init; }
 
-    // === v1.0.1: Custom Color (Brightness / Contrast / Saturation / Hue) ===
-    // Текущие значения из AMD Adrenalin - используются DisplayColorPageViewModel
-    // для инициализации слайдеров актуальными значениями драйвера.
+    // === v1.1.0: Custom Color (Brightness / Contrast / Saturation / Hue) ===
+    // Текущие значения из AMD Adrenalin через IADLXDisplayCustomColor -
+    // используются DisplayColorPageViewModel для инициализации слайдеров
+    // актуальными значениями драйвера вместо дефолтных 50/50/100/50.
+    // -1 = не поддерживается / не удалось прочитать.
     public bool CustomColorSupported { get; init; }
     public int  CustomColorBrightness { get; init; } = -1;
     public int  CustomColorContrast { get; init; } = -1;

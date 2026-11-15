@@ -181,7 +181,7 @@ public sealed class HardwareScanner
                 GpuScalingSupported = raw.GpuScalingSupported == 1,
                 GpuScalingEnabled  = raw.GpuScalingEnabled == 1,
 
-                // v1.0.1: Custom Color
+                // v1.1.0: Custom Color
                 CustomColorSupported  = raw.CustomColorSupported == 1,
                 CustomColorBrightness = raw.CustomColorBrightness,
                 CustomColorContrast   = raw.CustomColorContrast,
@@ -291,6 +291,11 @@ public sealed class HardwareScanner
     }
 
     /// <summary>
+    /// Фильтрация комбинаций разрешение/Гц/bpc по пропускной способности кабеля.
+    /// Используется UI перед ChangeDisplaySettingsEx: если HDMI 1.4 не держит
+    /// 4K@60Hz@10bpc - функция убирает такие комбинации из списка.
+    /// </summary>
+    /// <summary>
     /// v1.0.1: Читает текущие метрики GPU (температура, частота, usage, fan RPM, power).
     /// Используется PerformancePageViewModel для polling'а раз в секунду через
     /// DispatcherTimer. На Polaris (RX 580) доступны все основные метрики; на RDNA
@@ -304,11 +309,6 @@ public sealed class HardwareScanner
         return GpuMetrics.FromBridge(raw);
     }
 
-    /// <summary>
-    /// Фильтрация комбинаций разрешение/Гц/bpc по пропускной способности кабеля.
-    /// Используется UI перед ChangeDisplaySettingsEx: если HDMI 1.4 не держит
-    /// 4K@60Hz@10bpc - функция убирает такие комбинации из списка.
-    /// </summary>
     public IEnumerable<DisplayMode> FilterByBandwidth(IEnumerable<DisplayMode> modes, DisplayPortType port, int maxBpc)
     {
         // Пропускная способность (Gbps) = W * H * Hz * bpc * 3 (RGB) / 8 / 1e9,

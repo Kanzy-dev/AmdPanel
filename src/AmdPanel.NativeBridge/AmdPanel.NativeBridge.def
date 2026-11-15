@@ -19,5 +19,13 @@ EXPORTS
     ADLXBridge_SetDisplayPixelFormat
     ADLXBridge_GetDisplayColorDepth
     ADLXBridge_SetDisplayColorDepth
+    ADLXBridge_SetDisplayBrightness
+    ADLXBridge_SetDisplayContrast
+    ADLXBridge_SetDisplaySaturation
+    ADLXBridge_SetDisplayHue
+    ADLXBridge_GetDisplayBrightnessRange
+    ADLXBridge_GetDisplayContrastRange
+    ADLXBridge_GetDisplaySaturationRange
+    ADLXBridge_GetDisplayHueRange
     ADLXBridge_GetGpuMetrics
     ADLXBridge_FreeBuffer

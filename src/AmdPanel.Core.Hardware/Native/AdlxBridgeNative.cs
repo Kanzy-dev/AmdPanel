@@ -7,7 +7,7 @@ namespace AmdPanel.Core.Hardware.Native;
 /// Структуры расположены в том же порядке, что и в bridge.h - любое
 /// изменение в bridge.h должно зеркально отражаться здесь.
 /// </summary>
-internal static class AdlxBridgeNative
+public static class AdlxBridgeNative
 {
     private const string DllName = "AmdPanel.NativeBridge.dll";
     private const CallingConvention Cc = CallingConvention.Cdecl;
@@ -82,6 +82,26 @@ internal static class AdlxBridgeNative
 
     [DllImport(DllName, CallingConvention = Cc)]
     public static extern int ADLXBridge_SetDisplayColorDepth(int displayIndex, int newDepth);
+
+    // v1.1.0: Display Custom Color setters (через IADLXDisplayCustomColor)
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetDisplayBrightness(int displayIndex, int value);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetDisplayContrast(int displayIndex, int value);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetDisplaySaturation(int displayIndex, int value);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetDisplayHue(int displayIndex, int value);
+
+    // v1.1.0: CustomColor ranges (min/max/step + recommendedDefault = middle)
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetDisplayBrightnessRange(int displayIndex, out BridgeCustomColorRange outRange);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetDisplayContrastRange(int displayIndex, out BridgeCustomColorRange outRange);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetDisplaySaturationRange(int displayIndex, out BridgeCustomColorRange outRange);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetDisplayHueRange(int displayIndex, out BridgeCustomColorRange outRange);
 
     // v1.0.1: Performance metrics
     [DllImport(DllName, CallingConvention = Cc)]
