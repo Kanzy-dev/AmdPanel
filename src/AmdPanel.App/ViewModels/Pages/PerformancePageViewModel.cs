@@ -69,7 +69,7 @@ public sealed class PerformancePageViewModel : ViewModelBase, IPageViewModel
         // Stage 2: Реальный мониторинг через ADLX мост
         try
         {
-            var metrics = _hub.Gpu.GetMetrics(_gpuIndex);
+            var metrics = _hub.Scanner.GetGpuMetrics(_gpuIndex);
             if (metrics.TemperatureValid)
                 GpuTemperature = metrics.GpuTemperature;
             else
