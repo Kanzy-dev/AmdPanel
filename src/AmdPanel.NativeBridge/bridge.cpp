@@ -636,18 +636,20 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCurrentState(int32_t 
             // Чтение уровня tessellation
             if (b)
             {
-                ADLX_TESSELLATION_LEVEL level = ADLX_TESSELLATION_LEVEL_ADAPTIVE;
-                if (ADLX_OK == tess->GetMode(&level))
+                ADLX_TESSELLATION_LEVEL level = T_LEVEL_OFF;
+                if (ADLX_OK == tess->GetLevel(&level))
                 {
                     // Преобразуем ADLX_TESSELLATION_LEVEL в наш enum
                     switch (level)
                     {
-                        case ADLX_TESSELLATION_LEVEL_OFF:         outState->tessellationLevel = 0; break;
-                        case ADLX_TESSELLATION_LEVEL_LOW:        outState->tessellationLevel = 1; break;
-                        case ADLX_TESSELLATION_LEVEL_MEDIUM:     outState->tessellationLevel = 2; break;
-                        case ADLX_TESSELLATION_LEVEL_HIGH:       outState->tessellationLevel = 3; break;
-                        case ADLX_TESSELLATION_LEVEL_ULTRA:      outState->tessellationLevel = 4; break;
-                        case ADLX_TESSELLATION_LEVEL_ADAPTIVE:   outState->tessellationLevel = 0; break;
+                        case T_LEVEL_OFF:        outState->tessellationLevel = 0; break;
+                        case T_LEVEL_2X:        outState->tessellationLevel = 1; break;
+                        case T_LEVEL_4X:        outState->tessellationLevel = 2; break;
+                        case T_LEVEL_6X:        outState->tessellationLevel = 3; break;
+                        case T_LEVEL_8X:        outState->tessellationLevel = 4; break;
+                        case T_LEVEL_16X:       outState->tessellationLevel = 5; break;
+                        case T_LEVEL_32X:       outState->tessellationLevel = 6; break;
+                        case T_LEVEL_64X:       outState->tessellationLevel = 7; break;
                     }
                 }
             }
@@ -664,17 +666,17 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCurrentState(int32_t 
             // Чтение уровня anisotropic
             if (b)
             {
-                ADLX_ANISOTROPIC_LEVEL level = ADLX_ANISOTROPIC_LEVEL_OFF;
-                if (ADLX_OK == aniso->GetMode(&level))
+                ADLX_ANISOTROPIC_FILTERING_LEVEL level = AF_LEVEL_INVALID;
+                if (ADLX_OK == aniso->GetLevel(&level))
                 {
-                    // Преобразуем ADLX_ANISOTROPIC_LEVEL в наш enum
+                    // Преобразуем ADLX_ANISOTROPIC_FILTERING_LEVEL в наш enum
                     switch (level)
                     {
-                        case ADLX_ANISOTROPIC_LEVEL_OFF:      outState->anisotropicLevel = 0; break;
-                        case ADLX_ANISOTROPIC_LEVEL_2X:      outState->anisotropicLevel = 1; break;
-                        case ADLX_ANISOTROPIC_LEVEL_4X:      outState->anisotropicLevel = 2; break;
-                        case ADLX_ANISOTROPIC_LEVEL_8X:      outState->anisotropicLevel = 3; break;
-                        case ADLX_ANISOTROPIC_LEVEL_16X:     outState->anisotropicLevel = 4; break;
+                        case AF_LEVEL_X2:      outState->anisotropicLevel = 1; break;
+                        case AF_LEVEL_X4:      outState->anisotropicLevel = 2; break;
+                        case AF_LEVEL_X8:      outState->anisotropicLevel = 3; break;
+                        case AF_LEVEL_X16:     outState->anisotropicLevel = 4; break;
+                        default:               outState->anisotropicLevel = 0; break;
                     }
                 }
             }
@@ -707,7 +709,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAntiLag(int32_t gpuIndex
     IADLX3DAntiLagPtr antiLag;
     if (ADLX_OK != d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) || !antiLag) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = antiLag->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = antiLag->SetEnabled(enabled ? true : false);
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -730,7 +732,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetChill(int32_t gpuIndex, 
     IADLX3DChillPtr chill;
     if (ADLX_OK != d3dSvc->GetChill(gpu.GetPtr(), &chill) || !chill) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = chill->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = chill->SetEnabled(enabled ? true : false);
     if (res == ADLX_OK && enabled)
     {
         chill->SetMinFPS((adlx_int)minFps);
@@ -758,7 +760,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetImageSharpening(int32_t 
     IADLX3DImageSharpeningPtr imgSharp;
     if (ADLX_OK != d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) || !imgSharp) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = imgSharp->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = imgSharp->SetEnabled(enabled ? true : false);
     if (res == ADLX_OK && enabled)
     {
         imgSharp->SetSharpness((adlx_int)sharpness);
@@ -785,7 +787,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetBoost(int32_t gpuIndex, 
     IADLX3DBoostPtr boost;
     if (ADLX_OK != d3dSvc->GetBoost(gpu.GetPtr(), &boost) || !boost) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = boost->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = boost->SetEnabled(enabled ? true : false);
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -808,7 +810,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetWaitForVRefresh(int32_t 
     IADLX3DWaitForVerticalRefreshPtr vsync;
     if (ADLX_OK != d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &vsync) || !vsync) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = vsync->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = vsync->SetEnabled(enabled ? true : false);
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -831,20 +833,23 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetTessellation(int32_t gpu
     IADLX3DTessellationPtr tess;
     if (ADLX_OK != d3dSvc->GetTessellation(gpu.GetPtr(), &tess) || !tess) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = tess->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = tess->SetEnabled(enabled ? true : false);
     if (res == ADLX_OK && enabled)
     {
-        ADLX_TESSELLATION_LEVEL adlxLevel = ADLX_TESSELLATION_LEVEL_OFF;
+        ADLX_TESSELLATION_LEVEL adlxLevel = T_LEVEL_OFF;
         switch (level)
         {
-            case 0: adlxLevel = ADLX_TESSELLATION_LEVEL_OFF; break;
-            case 1: adlxLevel = ADLX_TESSELLATION_LEVEL_LOW; break;
-            case 2: adlxLevel = ADLX_TESSELLATION_LEVEL_MEDIUM; break;
-            case 3: adlxLevel = ADLX_TESSELLATION_LEVEL_HIGH; break;
-            case 4: adlxLevel = ADLX_TESSELLATION_LEVEL_ULTRA; break;
-            default: adlxLevel = ADLX_TESSELLATION_LEVEL_OFF; break;
+            case 0: adlxLevel = T_LEVEL_OFF; break;
+            case 1: adlxLevel = T_LEVEL_2X; break;
+            case 2: adlxLevel = T_LEVEL_4X; break;
+            case 3: adlxLevel = T_LEVEL_6X; break;
+            case 4: adlxLevel = T_LEVEL_8X; break;
+            case 5: adlxLevel = T_LEVEL_16X; break;
+            case 6: adlxLevel = T_LEVEL_32X; break;
+            case 7: adlxLevel = T_LEVEL_64X; break;
+            default: adlxLevel = T_LEVEL_OFF; break;
         }
-        tess->SetMode(adlxLevel);
+        tess->SetLevel(adlxLevel);
     }
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
@@ -868,20 +873,19 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAnisotropicFiltering(int
     IADLX3DAnisotropicFilteringPtr aniso;
     if (ADLX_OK != d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) || !aniso) return BRIDGE_INTERFACE_UNSUPPORTED;
     
-    ADLX_RESULT res = aniso->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = aniso->SetEnabled(enabled ? true : false);
     if (res == ADLX_OK && enabled)
     {
-        ADLX_ANISOTROPIC_LEVEL adlxLevel = ADLX_ANISOTROPIC_LEVEL_OFF;
+        ADLX_ANISOTROPIC_FILTERING_LEVEL adlxLevel = AF_LEVEL_X2;
         switch (level)
         {
-            case 0: adlxLevel = ADLX_ANISOTROPIC_LEVEL_OFF; break;
-            case 1: adlxLevel = ADLX_ANISOTROPIC_LEVEL_2X; break;
-            case 2: adlxLevel = ADLX_ANISOTROPIC_LEVEL_4X; break;
-            case 3: adlxLevel = ADLX_ANISOTROPIC_LEVEL_8X; break;
-            case 4: adlxLevel = ADLX_ANISOTROPIC_LEVEL_16X; break;
-            default: adlxLevel = ADLX_ANISOTROPIC_LEVEL_OFF; break;
+            case 0: adlxLevel = AF_LEVEL_X2; break;
+            case 1: adlxLevel = AF_LEVEL_X4; break;
+            case 2: adlxLevel = AF_LEVEL_X8; break;
+            case 3: adlxLevel = AF_LEVEL_X16; break;
+            default: adlxLevel = AF_LEVEL_X2; break;
         }
-        aniso->SetMode(adlxLevel);
+        aniso->SetLevel(adlxLevel);
     }
     return (ADLX_OK == res) ? BRIDGE_OK : BRIDGE_FAIL;
 }
@@ -1663,10 +1667,8 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuMetrics(int32_t gpuIn
 }
 
 //=========================================================================
-// 3D Settings setters for bidirectional sync
+// Free buffer
 //=========================================================================
-
-extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAntiLag(int32_t gpuIndex, int enabled)
 {
     if (!g_initialized) return BRIDGE_NOT_INITIALIZED;
     
@@ -1685,7 +1687,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAntiLag(int32_t gpuIndex
     IADLX3DAntiLagPtr antiLag;
     if (ADLX_OK != d3dSvc->GetAntiLag(gpu.GetPtr(), &antiLag) || !antiLag) return BRIDGE_FAIL;
     
-    ADLX_RESULT res = antiLag->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = antiLag->SetEnabled(enabled ? true : false);
     return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -1710,7 +1712,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetChill(int32_t gpuIndex, 
     
     if (enabled)
     {
-        ADLX_RESULT res = chill->SetEnabled(adlx_true);
+        ADLX_RESULT res = chill->SetEnabled(true);
         if (res != ADLX_OK) return BRIDGE_FAIL;
         res = chill->SetMinFPS((adlx_int)minFps);
         if (res != ADLX_OK) return BRIDGE_FAIL;
@@ -1719,7 +1721,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetChill(int32_t gpuIndex, 
     }
     else
     {
-        ADLX_RESULT res = chill->SetEnabled(adlx_false);
+        ADLX_RESULT res = chill->SetEnabled(false);
         if (res != ADLX_OK) return BRIDGE_FAIL;
     }
     
@@ -1745,7 +1747,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetImageSharpening(int32_t 
     IADLX3DImageSharpeningPtr imgSharp;
     if (ADLX_OK != d3dSvc->GetImageSharpening(gpu.GetPtr(), &imgSharp) || !imgSharp) return BRIDGE_FAIL;
     
-    ADLX_RESULT res = imgSharp->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = imgSharp->SetEnabled(enabled ? true : false);
     if (res != ADLX_OK) return BRIDGE_FAIL;
     
     if (enabled)
@@ -1776,7 +1778,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetBoost(int32_t gpuIndex, 
     IADLX3DBoostPtr boost;
     if (ADLX_OK != d3dSvc->GetBoost(gpu.GetPtr(), &boost) || !boost) return BRIDGE_FAIL;
     
-    ADLX_RESULT res = boost->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = boost->SetEnabled(enabled ? true : false);
     return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -1799,7 +1801,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetWaitForVRefresh(int32_t 
     IADLX3DWaitForVerticalRefreshPtr vsync;
     if (ADLX_OK != d3dSvc->GetWaitForVerticalRefresh(gpu.GetPtr(), &vsync) || !vsync) return BRIDGE_FAIL;
     
-    ADLX_RESULT res = vsync->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = vsync->SetEnabled(enabled ? true : false);
     return (res == ADLX_OK) ? BRIDGE_OK : BRIDGE_FAIL;
 }
 
@@ -1825,24 +1827,27 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetTessellation(int32_t gpu
     if (enabled)
     {
         // Convert our level to ADLX_TESSELLATION_LEVEL
-        ADLX_TESSELLATION_LEVEL adlxLevel = ADLX_TESSELLATION_LEVEL_OFF;
+        ADLX_TESSELLATION_LEVEL adlxLevel = T_LEVEL_OFF;
         switch (level)
         {
-            case 1: adlxLevel = ADLX_TESSELLATION_LEVEL_LOW; break;
-            case 2: adlxLevel = ADLX_TESSELLATION_LEVEL_MEDIUM; break;
-            case 3: adlxLevel = ADLX_TESSELLATION_LEVEL_HIGH; break;
-            case 4: adlxLevel = ADLX_TESSELLATION_LEVEL_ULTRA; break;
-            default: adlxLevel = ADLX_TESSELLATION_LEVEL_OFF; break;
+            case 1: adlxLevel = T_LEVEL_2X; break;
+            case 2: adlxLevel = T_LEVEL_4X; break;
+            case 3: adlxLevel = T_LEVEL_6X; break;
+            case 4: adlxLevel = T_LEVEL_8X; break;
+            case 5: adlxLevel = T_LEVEL_16X; break;
+            case 6: adlxLevel = T_LEVEL_32X; break;
+            case 7: adlxLevel = T_LEVEL_64X; break;
+            default: adlxLevel = T_LEVEL_OFF; break;
         }
         
-        ADLX_RESULT res = tess->SetEnabled(adlx_true);
+        ADLX_RESULT res = tess->SetEnabled(true);
         if (res != ADLX_OK) return BRIDGE_FAIL;
-        res = tess->SetMode(adlxLevel);
+        res = tess->SetLevel(adlxLevel);
         if (res != ADLX_OK) return BRIDGE_FAIL;
     }
     else
     {
-        ADLX_RESULT res = tess->SetEnabled(adlx_false);
+        ADLX_RESULT res = tess->SetEnabled(false);
         if (res != ADLX_OK) return BRIDGE_FAIL;
     }
     
@@ -1868,7 +1873,7 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAnisotropicFiltering(int
     IADLX3DAnisotropicFilteringPtr aniso;
     if (ADLX_OK != d3dSvc->GetAnisotropicFiltering(gpu.GetPtr(), &aniso) || !aniso) return BRIDGE_FAIL;
     
-    ADLX_RESULT res = aniso->SetEnabled(enabled ? adlx_true : adlx_false);
+    ADLX_RESULT res = aniso->SetEnabled(enabled ? true : false);
     if (res != ADLX_OK) return BRIDGE_FAIL;
     
     if (enabled)
