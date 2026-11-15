@@ -80,6 +80,12 @@ jobs:
               -c $env:CONFIGURATION -p:Platform=$env:PLATFORM `
               --no-restore --nologo -v minimal
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          
+          # Publish for deployment
+          dotnet publish src\AmdPanel.App\AmdPanel.App.csproj `
+              -c $env:CONFIGURATION -p:Platform=$env:PLATFORM `
+              --no-build --self-contained false --no-restore `
+              -o "publish\win-x64" --nologo -v minimal
 
       - name: Determine release version
         id: rel
@@ -98,24 +104,20 @@ jobs:
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
 
-      - name: Stage release directory
+      - name: Create installer with Inno Setup
         shell: pwsh
         run: |
-          $stage = "dist\AmdPanel-v${{ steps.rel.outputs.version }}-win-x64"
-          New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          $appOut = "src\AmdPanel.App\bin\$env:PLATFORM\$env:CONFIGURATION\net8.0-windows10.0.19041.0"
-          if (-not (Test-Path "$appOut\AmdPanel.exe")) {
-          $appOut = "src\AmdPanel.App\bin\$env:PLATFORM\$env:CONFIGURATION\net8.0-windows"
-          }
-          Copy-Item "$appOut\*" -Destination $stage -Recurse -Force
-          # Ensure NativeBridge.dll
-          if (-not (Test-Path "$stage\AmdPanel.NativeBridge.dll")) {
-            Copy-Item "build\NativeBridge\AmdPanel.NativeBridge.dll" -Destination $stage -Force
-          }
-          Copy-Item "LICENSE" -Destination $stage -Force -ErrorAction SilentlyContinue
-          Copy-Item "README.md" -Destination $stage -Force -ErrorAction SilentlyContinue
-          Write-Host "Staged to: $stage"
-          Get-ChildItem $stage | ForEach-Object { Write-Host "  $($_.Name)" }
+          # Download and install Inno Setup compiler (iscc)
+          choco install innosetup -y --limitoutput
+          
+          # Build the installer
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\AmdPanel.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          
+          # Move the installer to dist directory
+          $installerName = "AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe"
+          Move-Item "AmdPanel-Setup-x64.exe" "dist\$installerName" -Force
+          Write-Host "Created installer: dist\$installerName"
 
       - name: Create release ZIP
         shell: pwsh
@@ -131,6 +133,13 @@ jobs:
         with:
           name: ${{ steps.rel.outputs.archive_name }}
           path: dist/${{ steps.rel.outputs.archive_name }}
+          if-no-files-found: error
+          
+      - name: Upload installer as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe
+          path: dist/AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe
           if-no-files-found: error
 
       - name: Publish GitHub Release
@@ -166,6 +175,7 @@ jobs:
             See README.md for full documentation.
           files: |
             dist/${{ steps.rel.outputs.archive_name }}
+            dist/AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true

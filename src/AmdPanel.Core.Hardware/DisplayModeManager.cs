@@ -232,8 +232,9 @@ public sealed class DisplayModeManager : IDisposable
                 $"Тестовый вызов ChangeDisplaySettingsEx отклонил режим: код {testRc}");
         }
 
-        // Шаг 2: Apply
-        int applyRc = User32Display.ApplyMode(deviceName, newMode, persistToRegistry: false);
+        // Шаг 2: Apply with CDS_UPDATEREGISTRY
+        int applyRc = User32Display.ChangeDisplaySettingsEx(deviceName, ref newMode, IntPtr.Zero,
+            User32Display.CDS_UPDATEREGISTRY, IntPtr.Zero);
         if (applyRc != User32Display.DISP_CHANGE_SUCCESSFUL)
         {
             // Сразу откатываемся к previous

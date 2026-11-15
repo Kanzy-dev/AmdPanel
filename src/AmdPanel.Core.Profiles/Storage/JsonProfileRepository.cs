@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AmdPanel.Core.Profiles.Exceptions;
 using AmdPanel.Core.Profiles.Models;
+using AmdPanel.App.Services;
 
 namespace AmdPanel.Core.Profiles.Storage;
 
@@ -30,8 +31,11 @@ public sealed class JsonProfileRepository : IProfileRepository
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
 
-    public JsonProfileRepository()
+    private readonly AppConfigService _configService;
+
+    public JsonProfileRepository(AppConfigService configService)
     {
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         ProfilePaths.EnsureDirectories();
     }
 
@@ -129,4 +133,26 @@ public sealed class JsonProfileRepository : IProfileRepository
             throw new ProfileCorruptedException(path, ex);
         }
     }
+
+    // Новые методы для интеграции с AppConfigService
+    public void SaveProfiles(ProfileManager profileManager)
+    {
+        _configService.SaveProfiles(profileManager);
+    }
+
+    public ProfileManager LoadProfiles()
+    {
+        return _configService.LoadProfiles();
+    }
+
+    public void SaveAppSettings(AppSettings settings)
+    {
+        _configService.SaveAppSettings(settings);
+    }
+
+    public AppSettings LoadAppSettings()
+    {
+        return _configService.LoadAppSettings();
+    }
+}
 }

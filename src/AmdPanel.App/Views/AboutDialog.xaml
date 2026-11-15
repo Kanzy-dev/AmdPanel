@@ -38,6 +38,8 @@
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Form.Label}" Text="Version"/>
@@ -68,6 +70,16 @@
                    Text="© 2026 Kanzy-dev"/>
       </Grid>
     </Border>
+
+    <StackPanel DockPanel.Dock="Top" Margin="0,12,0,0">
+        <Button x:Name="CheckForUpdatesButton" 
+                Style="{StaticResource Button.Secondary}"
+                Width="180" 
+                Height="32"
+                HorizontalAlignment="Center"
+                Content="Check for updates..."
+                IsEnabled="False"/>
+      </StackPanel>
 
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                 HorizontalAlignment="Right" Margin="0,16,0,0">

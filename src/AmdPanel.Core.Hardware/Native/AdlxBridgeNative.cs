@@ -107,6 +107,26 @@ public static class AdlxBridgeNative
     [DllImport(DllName, CallingConvention = Cc)]
     public static extern int ADLXBridge_GetGpuMetrics(int gpuIndex, out BridgeGpuMetrics outMetrics);
 
+    // v1.1.0: Get current 3D settings state for bidirectional sync
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_GetGpuCurrentState(int gpuIndex, out BridgeGpuCurrentState outState);
+
+    // v1.1.0: Set 3D settings for bidirectional sync
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetAntiLag(int gpuIndex, int enabled);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetChill(int gpuIndex, int enabled, int minFps, int maxFps);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetImageSharpening(int gpuIndex, int enabled, int sharpness);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetBoost(int gpuIndex, int enabled);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetWaitForVRefresh(int gpuIndex, int enabled);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetTessellation(int gpuIndex, int enabled, int level);
+    [DllImport(DllName, CallingConvention = Cc)]
+    public static extern int ADLXBridge_SetAnisotropicFiltering(int gpuIndex, int enabled, int level);
+
     [DllImport(DllName, CallingConvention = Cc)]
     public static extern void ADLXBridge_FreeBuffer(IntPtr buffer);
 

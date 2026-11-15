@@ -159,6 +159,41 @@ public struct BridgeCustomColorRange
 }
 
 /// <summary>
+/// v1.1.0: Текущее состояние 3D настроек GPU (для двусторонней синхронизации)
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public struct BridgeGpuCurrentState
+{
+    public int Index;
+    
+    // AntiLag
+    public int AntiLagEnabled;
+    
+    // Chill
+    public int ChillEnabled;
+    public int ChillMinFps;
+    public int ChillMaxFps;
+    
+    // Image Sharpening
+    public int ImageSharpeningEnabled;
+    public int Sharpness;
+    
+    // Boost
+    public int BoostEnabled;
+    
+    // V-Sync (WaitForVerticalRefresh)
+    public int WaitForVRefreshEnabled;
+    
+    // Tessellation
+    public int TessellationEnabled;
+    public int TessellationLevel;
+    
+    // Anisotropic Filtering
+    public int AnisotropicEnabled;
+    public int AnisotropicLevel;
+}
+
+/// <summary>
 /// v1.0.1: Метрики GPU в реальном времени.
 /// Каждое поле имеет *Valid флаг (0 = не поддерживается на этом GPU).
 /// </summary>

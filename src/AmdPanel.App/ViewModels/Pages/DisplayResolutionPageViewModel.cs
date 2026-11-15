@@ -3,6 +3,8 @@ using AmdPanel.App.Mvvm;
 using AmdPanel.App.Services;
 using AmdPanel.Core.Hardware;
 using AmdPanel.Core.Hardware.Capability;
+using AmdPanel.Core.Hardware.Win32;
+using System;
 
 namespace AmdPanel.App.ViewModels.Pages;
 
@@ -166,13 +168,52 @@ public sealed class DisplayResolutionPageViewModel : ViewModelBase, IPageViewMod
         if (SelectedResolution is null) return new DisplayApplyResult(-1, false, false, "Не выбрано разрешение");
         string device = _display.DisplayName;
         var mgr = _hub.DisplayModeManager;
+        
+        // Устанавливаем callback для обновления UI после подтверждения
+        mgr.WatchdogCallback = (request, controller) => 
+        {
+            // Этот вызывается при запуске таймера - нам нужно обновить UI
+            UpdateDisplayInfoAfterApply();
+        };
+        
         var result = await mgr.ApplyModeAsync(device,
             SelectedResolution.Width, SelectedResolution.Height,
             SelectedRefresh, SelectedBpc);
         
         _isDirty = false;
         OnPropertyChanged(nameof(IsDirty));
+        
+        // Сразу обновляем информацию о дисплее после успешного применения
+        if (result.ConfirmedByUser)
+        {
+            UpdateDisplayInfoAfterApply();
+        }
+        
         return result;
+    }
+    
+    /// <summary>
+    /// Обновляет информацию о текущем режиме дисплея после применения изменений
+    /// </summary>
+    private void UpdateDisplayInfoAfterApply()
+    {
+        try
+        {
+            // Получаем текущий режим через Win32 API
+            var currentMode = User32Display.QueryCurrentMode(_display.DisplayName);
+            _display.CurrentWidth = currentMode.dmPelsWidth;
+            _display.CurrentHeight = currentMode.dmPelsHeight;
+            _display.CurrentRefreshHz = currentMode.dmDisplayFrequency;
+            
+            // Обновляем UI
+            OnPropertyChanged(nameof(SelectedResolution));
+            OnPropertyChanged(nameof(SelectedRefresh));
+        }
+        catch (Exception ex)
+        {
+            // Логируем ошибку, но не прерываем работу
+            System.Diagnostics.Trace.WriteLine($"[DisplayResolutionPageViewModel] Failed to update display info: {ex.Message}");
+        }
     }
 
     // --- Helpers ---

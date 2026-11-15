@@ -62,14 +62,19 @@
           </ComboBox>
         </StackPanel>
 
+        <!-- Контекстное меню рабочего стола -->
+        <CheckBox Grid.Column="4" Style="{StaticResource CheckBox.Header}"
+                  Content="{DynamicResource header.desktopContextMenu}"
+                  IsChecked="{Binding ContextMenuEnabled, Mode=TwoWay}"/>
+
         <!-- Кнопка "Пересканировать" -->
-        <Button Grid.Column="4" Style="{StaticResource Button.Standard}"
+        <Button Grid.Column="5" Style="{StaticResource Button.Standard}"
                 Margin="0,0,8,0"
                 Command="{Binding RescanCommand}"
                 Content="{DynamicResource header.rescan}"/>
 
         <!-- Кнопка "О программе" (v1.0.0) -->
-        <Button Grid.Column="5" Style="{StaticResource Button.Standard}"
+        <Button Grid.Column="6" Style="{StaticResource Button.Standard}"
                 Click="OnAboutClick"
                 Content="About"/>
       </Grid>

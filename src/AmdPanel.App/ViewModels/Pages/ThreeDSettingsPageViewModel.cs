@@ -4,8 +4,10 @@ using System.Windows.Input;
 using AmdPanel.App.Mvvm;
 using AmdPanel.App.Services;
 using AmdPanel.Core.Hardware.Capability;
+using AmdPanel.Core.Hardware.Native;
 using AmdPanel.Core.Profiles.Models;
 using AmdPanel.Core.Profiles.Services;
+using AmdPanel.Core.Profiles.Storage;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AmdPanel.App.ViewModels.Pages;
@@ -24,6 +26,8 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     private readonly int _gpuIndex;
     private readonly GlobalProfile _globalProfile;
     private readonly ProfileService? _profileService;
+    private readonly IProfileRepository _profileRepository;
+    private readonly AppConfigService _configService;
 
     /// <summary>
     /// ctor для Stage 2 (без ProfileService — Program Settings tab недоступен).
@@ -33,12 +37,15 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
 
     /// <summary> ctor для Stage 3 — с поддержкой Program Settings. </summary>
     public ThreeDSettingsPageViewModel(int gpuIndex, GpuCapabilities caps,
-        ProfileService profileService, GlobalProfile globalProfile)
+        ProfileService profileService, GlobalProfile globalProfile, 
+        IProfileRepository profileRepository, AppConfigService configService)
     {
         _gpuIndex = gpuIndex;
         _caps = caps;
         _profileService = profileService;
         _globalProfile = globalProfile;
+        _profileRepository = profileRepository;
+        _configService = configService;
 
         // Загрузить список программных профилей
         if (_globalProfile is not null)
@@ -281,6 +288,129 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         SelectedApplication.Profile.ThreeDSettings.AnisoLevel = AppAniso;
         SelectedApplication.Profile.ThreeDSettings.Boost = AppBoost;
         _profileService.Save(_globalProfile!);
+        
+        // Дополнительно сохранить через AppConfigService для атомарного сохранения
+        var profileManager = _profileRepository.LoadProfiles();
+        profileManager.Applications = ApplicationProfiles.Select(item => new ApplicationProfileItem
+        {
+            ExecutablePath = item.Profile.ExecutablePath,
+            DisplayName = item.Profile.DisplayName,
+            AntiLag = item.Profile.ThreeDSettings.AntiLag,
+            Chill = item.Profile.ThreeDSettings.Chill,
+            ChillMinFps = item.Profile.ThreeDSettings.ChillMinFps,
+            ChillMaxFps = item.Profile.ThreeDSettings.ChillMaxFps,
+            ImageSharpening = item.Profile.ThreeDSettings.Sharpness > 0,
+            Sharpness = item.Profile.ThreeDSettings.Sharpness,
+            Boost = item.Profile.ThreeDSettings.Boost,
+            VSyncMode = item.Profile.ThreeDSettings.VSyncMode,
+            AnisoLevel = item.Profile.ThreeDSettings.AnisoLevel,
+            TessLevel = item.Profile.ThreeDSettings.TessLevel
+        }).ToList();
+        _profileRepository.SaveProfiles(profileManager);
+    }
+
+    /// <summary>
+    /// Обновляет настройки из текущего состояния драйвера для двусторонней синхронизации
+    /// </summary>
+    public void RefreshFromDriver()
+    {
+        // Получаем текущее состояние из ADLX
+        var currentState = new BridgeGpuCurrentState();
+        int result = AdlxBridgeNative.ADLXBridge_GetGpuCurrentState(_gpuIndex, out currentState);
+        
+        if (result == AdlxBridgeNative.BRIDGE_OK)
+        {
+            // Обновляем глобальные настройки
+            AntiLag = currentState.AntiLagEnabled == 1;
+            Chill = currentState.ChillEnabled == 1;
+            ChillMinFps = currentState.ChillMinFps;
+            ChillMaxFps = currentState.ChillMaxFps;
+            ImageSharpening = currentState.ImageSharpeningEnabled == 1;
+            Sharpness = currentState.Sharpness;
+            Boost = currentState.BoostEnabled == 1;
+            VSyncMode = currentState.WaitForVRefreshEnabled; // VSyncMode corresponds to WaitForVRefresh
+            AnisoLevel = currentState.AnisotropicLevel;
+            TessLevel = currentState.TessellationLevel;
+            
+            // Обновляем настройки приложения, если выбрано
+            if (SelectedApplication != null)
+            {
+                var appSettings = SelectedApplication.Profile.ThreeDSettings;
+                _appAntiLag = appSettings.AntiLag;
+                _appChill = appSettings.Chill;
+                _appSharpnessEnabled = appSettings.Sharpness > 0;
+                _appSharpness = appSettings.Sharpness;
+                _appVSync = appSettings.VSyncMode;
+                _appTess = appSettings.TessLevel;
+                _appAniso = appSettings.AnisoLevel;
+                _appBoost = appSettings.Boost;
+                
+                OnPropertyChanged(nameof(AppAntiLag));
+                OnPropertyChanged(nameof(AppChill));
+                OnPropertyChanged(nameof(AppSharpnessEnabled));
+                OnPropertyChanged(nameof(AppSharpness));
+                OnPropertyChanged(nameof(AppVSync));
+                OnPropertyChanged(nameof(AppTess));
+                OnPropertyChanged(nameof(AppAniso));
+                OnPropertyChanged(nameof(AppBoost));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Применяет глобальные настройки в драйвер с двусторонней синхронизацией
+    /// </summary>
+    public void ApplyGlobalSettingsToDriver()
+    {
+        // Применяем AntiLag
+        AdlxBridgeNative.ADLXBridge_SetAntiLag(_gpuIndex, AntiLag ? 1 : 0);
+        
+        // Применяем Chill
+        AdlxBridgeNative.ADLXBridge_SetChill(_gpuIndex, Chill ? 1 : 0, ChillMinFps, ChillMaxFps);
+        
+        // Применяем Image Sharpening
+        AdlxBridgeNative.ADLXBridge_SetImageSharpening(_gpuIndex, ImageSharpening ? 1 : 0, Sharpness);
+        
+        // Применяем Boost
+        AdlxBridgeNative.ADLXBridge_SetBoost(_gpuIndex, Boost ? 1 : 0);
+        
+        // Применяем V-Sync
+        AdlxBridgeNative.ADLXBridge_SetWaitForVRefresh(_gpuIndex, VSyncMode > 0 ? 1 : 0);
+        
+        // Применяем Tessellation
+        AdlxBridgeNative.ADLXBridge_SetTessellation(_gpuIndex, TessLevel > 0 ? 1 : 0, TessLevel);
+        
+        // Применяем Anisotropic Filtering
+        AdlxBridgeNative.ADLXBridge_SetAnisotropicFiltering(_gpuIndex, AnisoLevel > 0 ? 1 : 0, AnisoLevel);
+    }
+
+    /// <summary>
+    /// Применяет настройки приложения в драйвер с двусторонней синхронизацией
+    /// </summary>
+    public void ApplyApplicationSettingsToDriver()
+    {
+        if (SelectedApplication == null) return;
+        
+        // Применяем AntiLag
+        AdlxBridgeNative.ADLXBridge_SetAntiLag(_gpuIndex, AppAntiLag ? 1 : 0);
+        
+        // Применяем Chill
+        AdlxBridgeNative.ADLXBridge_SetChill(_gpuIndex, AppChill ? 1 : 0, ChillMinFps, ChillMaxFps);
+        
+        // Применяем Image Sharpening
+        AdlxBridgeNative.ADLXBridge_SetImageSharpening(_gpuIndex, AppSharpnessEnabled ? 1 : 0, AppSharpness);
+        
+        // Применяем Boost
+        AdlxBridgeNative.ADLXBridge_SetBoost(_gpuIndex, AppBoost ? 1 : 0);
+        
+        // Применяем V-Sync
+        AdlxBridgeNative.ADLXBridge_SetWaitForVRefresh(_gpuIndex, AppVSync > 0 ? 1 : 0);
+        
+        // Применяем Tessellation
+        AdlxBridgeNative.ADLXBridge_SetTessellation(_gpuIndex, AppTess > 0 ? 1 : 0, AppTess);
+        
+        // Применяем Anisotropic Filtering
+        AdlxBridgeNative.ADLXBridge_SetAnisotropicFiltering(_gpuIndex, AppAniso > 0 ? 1 : 0, AppAniso);
     }
 
     private void RefreshApplicationEditPanel()

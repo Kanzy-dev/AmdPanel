@@ -29,15 +29,20 @@ public sealed class MainViewModel : ViewModelBase
     private readonly LanguageService _languageService;
     private readonly ProfileService _profileService;
     private readonly GlobalProfile _globalProfile;
+    private readonly ContextMenuService _contextMenuService;
+    private readonly AppUpdateService _updateService;
 
     public MainViewModel(UiHardwareHub hub, WatchdogDialogService watchdogService,
-        LanguageService languageService, ProfileService profileService, GlobalProfile globalProfile)
+        LanguageService languageService, ProfileService profileService, GlobalProfile globalProfile,
+        ContextMenuService contextMenuService, AppUpdateService updateService)
     {
         _hub = hub;
         _watchdogService = watchdogService;
         _languageService = languageService;
         _profileService = profileService;
         _globalProfile = globalProfile;
+        _contextMenuService = contextMenuService;
+        _updateService = updateService;
         _hub.DisplayModeManager.WatchdogCallback = _watchdogService.OnDisplayChangeRequest;
         ApplyCommand = new RelayCommand(async () => await ApplyAsync(), () => CanApply);
         CancelCommand = new RelayCommand(Cancel, () => IsDirty);
@@ -67,6 +72,19 @@ public sealed class MainViewModel : ViewModelBase
 
     public string AdlxVersion => _hub.Snapshot.AdlxVersion;
     public bool IsDriverOnly => _hub.Snapshot.IsDriverOnlyInstallation;
+
+    // ===== Настройки интерфейса =====
+    
+    public bool ContextMenuEnabled
+    {
+        get => _contextMenuService.IsContextMenuEnabled();
+        set
+        {
+            if (_contextMenuService.IsContextMenuEnabled() == value) return;
+            _contextMenuService.SetContextMenuEnabled(value);
+            OnPropertyChanged();
+        }
+    }
 
     // ===== Навигация =====
 

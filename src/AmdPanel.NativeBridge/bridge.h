@@ -94,6 +94,40 @@ struct BridgeGpuCapabilities
 };
 
 //-------------------------------------------------------------------------
+// GPU: текущее состояние 3D настроек (для двусторонней синхронизации)
+//-------------------------------------------------------------------------
+struct BridgeGpuCurrentState
+{
+    int32_t index;
+    
+    // AntiLag
+    int32_t antiLagEnabled;
+    
+    // Chill
+    int32_t chillEnabled;
+    int32_t chillMinFps;
+    int32_t chillMaxFps;
+    
+    // Image Sharpening
+    int32_t imageSharpeningEnabled;
+    int32_t sharpness;
+    
+    // Boost
+    int32_t boostEnabled;
+    
+    // V-Sync (WaitForVerticalRefresh)
+    int32_t waitForVRefreshEnabled;
+    
+    // Tessellation
+    int32_t tessellationEnabled;
+    int32_t tessellationLevel;
+    
+    // Anisotropic Filtering
+    int32_t anisotropicEnabled;
+    int32_t anisotropicLevel;
+};
+
+//-------------------------------------------------------------------------
 // GPU: динамические диапазоны для слайдеров (из ADLX_IntRange)
 //     значения < 0 означают "функция не поддерживается".
 //-------------------------------------------------------------------------
@@ -193,6 +227,16 @@ BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCount(int32_t* outCount);
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuInfo(int32_t gpuIndex, BridgeGpuInfo* outInfo);
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCapabilities(int32_t gpuIndex, BridgeGpuCapabilities* outCaps);
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuTuningRanges(int32_t gpuIndex, BridgeTuningRanges* outRanges);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetGpuCurrentState(int32_t gpuIndex, BridgeGpuCurrentState* outState);
+
+//--- 3D Settings Setters for bidirectional sync ---
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAntiLag(int32_t gpuIndex, int32_t enabled);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetChill(int32_t gpuIndex, int32_t enabled, int32_t minFps, int32_t maxFps);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetImageSharpening(int32_t gpuIndex, int32_t enabled, int32_t sharpness);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetBoost(int32_t gpuIndex, int32_t enabled);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetWaitForVRefresh(int32_t gpuIndex, int32_t enabled);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetTessellation(int32_t gpuIndex, int32_t enabled, int32_t level);
+BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_SetAnisotropicFiltering(int32_t gpuIndex, int32_t enabled, int32_t level);
 
 //--- Display ---
 BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayCount(int32_t* outCount);
