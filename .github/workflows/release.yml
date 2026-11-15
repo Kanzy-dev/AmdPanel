@@ -110,6 +110,12 @@ jobs:
           # Download and install Inno Setup compiler (iscc)
           choco install innosetup -y --limitoutput
           
+          # Copy published files to the location expected by installer
+          Copy-Item "publish\win-x64\*" "installer\" -Force -Recurse
+          
+          # Copy native bridge DLL if it exists
+          Copy-Item "build\NativeBridge\AmdPanel.NativeBridge.dll" "installer\" -Force -ErrorAction SilentlyContinue
+          
           # Build the installer
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\AmdPanel.iss"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

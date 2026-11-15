@@ -60,24 +60,8 @@ Root: HKCU; Subkey: "Software\Classes\Directory\Background\shell\AmdPanel\comman
 [Code]
 function InitializeSetup(): Boolean;
 begin
-  // Check if required directories exist
-  if not DirExists('..\publish\win-x64') then
-  begin
-    MsgBox('Build directory "..\publish\win-x64" not found. Please build the project first.', 
-           mbError, MB_OK);
-    Result := False;
-    Exit;
-  end;
-  
-  // Check if main executable exists
-  if not FileExists('..\publish\win-x64\AmdPanel.exe') then
-  begin
-    MsgBox('Main executable "..\publish\win-x64\AmdPanel.exe" not found. Please build the project first.', 
-           mbError, MB_OK);
-    Result := False;
-    Exit;
-  end;
-  
+  // Initialize setup without build-time checks (these are only relevant for ISCC compilation)
+  // The files will be packaged during installation from the installer's built-in sources
   Result := True;
 end;
 
