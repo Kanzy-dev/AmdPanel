@@ -173,60 +173,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         }
     }
 
-    // Свойства для новой реализации в стиле NVIDIA Control Panel
-    public ICommand BrowseProgramCommand { get; }
-    public ICommand RemoveProgramCommand { get; }
 
-    public string SelectedParameterDescription { get; set; } = string.Empty;
-    public string SelectedParameterUsage { get; set; } = string.Empty;
-
-    public ObservableCollection<InstalledAppInfo> InstalledPrograms { get; } = new();
-    private InstalledAppInfo? _selectedProgram;
-    public InstalledAppInfo? SelectedProgram
-    {
-        get => _selectedProgram;
-        set => SetField(ref _selectedProgram, value);
-    }
-
-    private ApplicationProfileItem? _selectedApplication;
-    public ApplicationProfileItem? SelectedApplication
-    {
-        get => _selectedApplication;
-        set
-        {
-            if (SetField(ref _selectedApplication, value))
-            {
-                RefreshApplicationEditPanel();
-                UpdateParameterDescription();
-            }
-        }
-    }
-
-    private void UpdateParameterDescription()
-    {
-        if (SelectedApplication is not null)
-        {
-            SelectedParameterDescription = $"3D-настройки для {SelectedApplication.Profile.DisplayName}";
-            SelectedParameterUsage = "Профиль применяется, когда запущен указанный процесс.";
-        }
-        else
-        {
-            SelectedParameterDescription = string.Empty;
-            SelectedParameterUsage = string.Empty;
-        }
-    }
-
-    private void UpdateSelectedApplication()
-    {
-        // Загружаем список программ при первом обращении к этой вкладке
-        if (InstalledPrograms.Count == 0)
-        {
-            LoadInstalledApps();
-        }
-
-        if (SelectedProgram is not null)
-        {
-            // Попытка найти существующий профиль для этой программы
             var existing = ApplicationProfiles.FirstOrDefault(ap => ap.Profile.ProcessName == SelectedProgram.ProcessName);
             if (existing is null && _profileService is not null && _globalProfile is not null)
             {
