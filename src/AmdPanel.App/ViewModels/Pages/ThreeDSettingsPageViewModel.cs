@@ -278,7 +278,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         SelectedApplication.Profile.ThreeDSettings.Sharpness = AppSharpnessEnabled ? AppSharpness : 0;
         SelectedApplication.Profile.ThreeDSettings.VSyncMode = AppVSync;
         SelectedApplication.Profile.ThreeDSettings.TessLevel = AppTess;
-        SelectedApplication.Profile.ThreeDSettings.AnisotropicLevel = AppAniso;
+        SelectedApplication.Profile.ThreeDSettings.AnisoLevel = AppAniso;
         SelectedApplication.Profile.ThreeDSettings.Boost = AppBoost;
         _profileService.Save(_globalProfile!);
     }
@@ -318,7 +318,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         _appTess = t.TessLevel;
         OnPropertyChanged(nameof(AppTess));
 
-        _appAniso = t.AnisotropicLevel;
+        _appAniso = t.AnisoLevel;
         OnPropertyChanged(nameof(AppAniso));
 
         _appBoost = t.Boost;
