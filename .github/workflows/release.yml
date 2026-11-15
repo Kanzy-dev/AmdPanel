@@ -116,7 +116,7 @@ jobs:
           
           # Move the installer to dist directory
           $installerName = "AmdPanel-Setup-x64-${{ steps.rel.outputs.version }}.exe"
-          Move-Item "AmdPanel-Setup-x64.exe" "dist\$installerName" -Force
+          Move-Item "installer\AmdPanel-Setup-x64.exe" "dist\$installerName" -Force
           Write-Host "Created installer: dist\$installerName"
 
       - name: Create release ZIP
