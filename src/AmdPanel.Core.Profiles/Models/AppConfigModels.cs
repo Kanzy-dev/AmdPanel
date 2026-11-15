@@ -53,20 +53,11 @@ public sealed record ApplicationProfileItem
 }
 
 /// <summary>
-/// Профиль для конкретного приложения
+/// Менеджер профилей
 /// </summary>
-public sealed record ApplicationProfileItem
+public sealed record ProfileManager
 {
-    public string ExecutablePath { get; init; } = string.Empty;
-    public string DisplayName { get; init; } = string.Empty;
-    public bool AntiLag { get; init; } = false;
-    public bool Chill { get; init; } = false;
-    public int ChillMinFps { get; init; } = 30;
-    public int ChillMaxFps { get; init; } = 60;
-    public bool ImageSharpening { get; init; } = false;
-    public int Sharpness { get; init; } = 50;
-    public bool Boost { get; init; } = false;
-    public int VSyncMode { get; init; } = 1;
-    public int AnisoLevel { get; init; } = 0;
-    public int TessLevel { get; init; } = 0;
+    public ThreeDSettingsProfile GlobalProfile { get; init; } = new();
+    
+    public List<ApplicationProfileItem> Applications { get; init; } = new();
 }
