@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
-using AmdPanel.App.Services;
+using AmdPanel.Core.Profiles.Models;
+using AmdPanel.Core.Profiles.Services;
 
 namespace AmdPanel.App.Services;
 
@@ -13,10 +14,10 @@ public sealed class ContextMenuService : IDisposable
 {
     private const string RegistryKeyPath = @"Software\Classes\Directory\Background\shell\AmdPanel";
     private const string CommandKeyPath = @"Software\Classes\Directory\Background\shell\AmdPanel\command";
-    private readonly AppConfigService _configService;
+    private readonly IAppConfigService _configService;
     private readonly string _appPath;
 
-    public ContextMenuService(AppConfigService configService)
+    public ContextMenuService(IAppConfigService configService)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         _appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AmdPanel.exe");

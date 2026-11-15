@@ -4,7 +4,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AmdPanel.App.Mvvm;
-using AmdPanel.App.Services;
+using AmdPanel.Core.Profiles.Models;
+using AmdPanel.Core.Profiles.Services;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AmdPanel.App.Services;
@@ -15,7 +16,7 @@ namespace AmdPanel.App.Services;
 public sealed class AppUpdateService : ViewModelBase, IDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly AppConfigService _configService;
+    private readonly IAppConfigService _configService;
     private readonly string _repositoryUrl = "https://github.com/kanzy/amdpanel";
     private readonly string _apiUrl = "https://api.github.com/repos/kanzy/amdpanel/releases/latest";
     private bool _isChecking;
@@ -54,7 +55,7 @@ public sealed class AppUpdateService : ViewModelBase, IDisposable
         private set => SetField(ref _updateMessage, value);
     }
 
-    public AppUpdateService(AppConfigService configService)
+    public AppUpdateService(IAppConfigService configService)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         _httpClient = new HttpClient();

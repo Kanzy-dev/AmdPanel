@@ -27,7 +27,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     private readonly GlobalProfile _globalProfile;
     private readonly ProfileService? _profileService;
     private readonly IProfileRepository _profileRepository;
-    private readonly AppConfigService _configService;
+    private readonly IProfileRepository _profileRepository;
 
     /// <summary>
     /// ctor для Stage 2 (без ProfileService — Program Settings tab недоступен).
@@ -38,14 +38,13 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
     /// <summary> ctor для Stage 3 — с поддержкой Program Settings. </summary>
     public ThreeDSettingsPageViewModel(int gpuIndex, GpuCapabilities caps,
         ProfileService profileService, GlobalProfile globalProfile, 
-        IProfileRepository profileRepository, AppConfigService configService)
+        IProfileRepository profileRepository)
     {
         _gpuIndex = gpuIndex;
         _caps = caps;
         _profileService = profileService;
         _globalProfile = globalProfile;
         _profileRepository = profileRepository;
-        _configService = configService;
 
         // Загрузить список программных профилей
         if (_globalProfile is not null)
@@ -289,7 +288,7 @@ public sealed class ThreeDSettingsPageViewModel : ViewModelBase, IPageViewModel
         SelectedApplication.Profile.ThreeDSettings.Boost = AppBoost;
         _profileService.Save(_globalProfile!);
         
-        // Дополнительно сохранить через AppConfigService для атомарного сохранения
+        // Дополнительно сохранить через ProfileRepository для атомарного сохранения
         var profileManager = _profileRepository.LoadProfiles();
         profileManager.Applications = ApplicationProfiles.Select(item => new ApplicationProfileItem
         {

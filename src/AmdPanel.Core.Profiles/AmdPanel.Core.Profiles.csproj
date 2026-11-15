@@ -25,6 +25,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AmdPanel.Core.Hardware\AmdPanel.Core.Hardware.csproj" />
-    <ProjectReference Include="..\AmdPanel.App\AmdPanel.App.csproj" />
   </ItemGroup>
 </Project>
