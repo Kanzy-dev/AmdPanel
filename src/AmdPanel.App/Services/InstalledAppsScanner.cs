@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -14,16 +13,6 @@ namespace AmdPanel.App.Services;
 /// v1.1.0: Сканирование установленных игр и программ для вкладки
 /// "Программные настройки" в стиле NVIDIA Control Panel.
 /// </summary>
-/// <remarks>
-/// Источники программ:
-/// <list type="bullet">
-///   <item>Steam library (<c>libraryfolders.vdf</c> + <c>appmanifest_*.acf</c>)</item>
-///   <item>Windows Uninstall registry (<c>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</c> + WOW6432Node)</item>
-///   <item>Текущие оконные процессы (через <c>Process.GetProcesses()</c>)</item>
-/// </list>
-/// Для каждого .exe извлекается иконка через <c>System.Drawing.Icon.ExtractAssociatedIcon</c>
-/// и конвертируется в <c>ImageSource</c> через <c>Imaging.CreateBitmapSourceFromHIcon</c>.
-/// </remarks>
 public sealed class InstalledAppInfo
 {
     public string DisplayName { get; init; } = string.Empty;
@@ -84,25 +73,18 @@ public static class InstalledAppsScanner
     //  Steam library scanner
     // =================================================================
 
-    /// <summary>
-    /// Сканирует Steam library: находит libraryfolders.vdf, парсит пути к
-    /// библиотекам, и в каждом steamapps/appmanifest_*.acf читает имя игры.
-    /// </summary>
     private static IEnumerable<InstalledAppInfo> ScanSteamLibrary()
     {
-        // Steam установлен в HKCU\Software\Valve\Steam\SteamPath
         string? steamPath = Registry.CurrentUser
             .OpenSubKey(@"Software\Valve\Steam")?
             .GetValue("SteamPath") as string;
         if (string.IsNullOrEmpty(steamPath))
         {
-            // Fallback: стандартные пути
             steamPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam");
         }
         if (!Directory.Exists(steamPath)) yield break;
 
-        // libraryfolders.vdf: список путей к библиотекам Steam
         string vdfPath = Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
         if (!File.Exists(vdfPath)) yield break;
 
@@ -110,7 +92,6 @@ public static class InstalledAppsScanner
         try
         {
             string vdfContent = File.ReadAllText(vdfPath);
-            // Парсим строки "path"		"D:\\SteamLibrary"
             var matches = Regex.Matches(vdfContent, @"""path""\s+""([^""]+)""");
             foreach (Match m in matches)
             {
@@ -120,7 +101,6 @@ public static class InstalledAppsScanner
         }
         catch { /* ignore parse errors */ }
 
-        // В каждой библиотеке ищем appmanifest_*.acf
         foreach (string libPath in libraryPaths)
         {
             if (!Directory.Exists(libPath)) continue;
@@ -144,14 +124,12 @@ public static class InstalledAppsScanner
 
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(installDir)) continue;
 
-                // Ищем .exe в common/{installDir}/
                 string gameDir = Path.Combine(libPath, "common", installDir);
                 if (!Directory.Exists(gameDir)) continue;
 
                 string? exePath = null;
                 try
                 {
-                    // Берём первый .exe в папке игры (не launcher.exe, а основной)
                     var exes = Directory.GetFiles(gameDir, "*.exe", SearchOption.TopDirectoryOnly);
                     exePath = exes.FirstOrDefault(e =>
                         !e.EndsWith("launcher.exe", StringComparison.OrdinalIgnoreCase) &&
@@ -178,10 +156,6 @@ public static class InstalledAppsScanner
     //  Uninstall registry scanner
     // =================================================================
 
-    /// <summary>
-    /// Сканирует HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
-    /// (и WOW6432Node) для установленных программ с DisplayIcon.
-    /// </summary>
     private static IEnumerable<InstalledAppInfo> ScanUninstallRegistry()
     {
         string[] roots =
@@ -206,11 +180,9 @@ public static class InstalledAppsScanner
                 if (string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(displayIcon))
                     continue;
 
-                // DisplayIcon может быть "C:\path\app.exe,0" — обрезаем запятую
                 string exePath = displayIcon.Split(',')[0].Trim().Trim('"');
                 if (!File.Exists(exePath)) continue;
 
-                // Фильтр: только .exe, исключаем системные утилиты
                 if (exePath.IndexOf("system32", StringComparison.OrdinalIgnoreCase) >= 0) continue;
 
                 yield return new InstalledAppInfo
@@ -229,53 +201,52 @@ public static class InstalledAppsScanner
     //  Running processes scanner
     // =================================================================
 
-    /// <summary>
-    /// Сканирует текущие процессы с окнами (отличаются от фоновых сервисов).
-    /// Использует Win32 EnumWindows для фильтрации процессов с видимыми окнами.
-    /// </summary>
-    private static IEnumerable<InstalledAppInfo> ScanRunningProcesses()
+    private static List<InstalledAppInfo> ScanRunningProcesses()
     {
+        var results = new List<InstalledAppInfo>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var proc in Process.GetProcesses())
         {
             try
             {
-                if (proc.MainWindowHandle == IntPtr.Zero) continue;  // нет окна
+                if (proc.MainWindowHandle == IntPtr.Zero) continue;
+
                 string? exePath = null;
                 try { exePath = proc.MainModule?.FileName; }
                 catch { /* access denied для системных процессов */ }
 
                 string procName = proc.ProcessName;
                 if (string.IsNullOrEmpty(procName)) continue;
-                if (seen.Contains(procName.ToLowerInvariant())) continue;
-                seen.Add(procName.ToLowerInvariant());
+                if (!seen.Add(procName)) continue;
 
-                // Фильтр: исключаем системные процессы
                 if (procName.Equals("explorer", StringComparison.OrdinalIgnoreCase) ||
                     procName.Equals("ApplicationFrameHost", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                yield return new InstalledAppInfo
+                results.Add(new InstalledAppInfo
                 {
                     DisplayName = procName,
                     ExecutablePath = exePath ?? procName,
                     ProcessName = procName,
                     Icon = exePath is not null ? ExtractIcon(exePath) : null,
                     Source = "Running"
-                };
+                });
             }
             catch { /* ignore individual process errors */ }
+            finally
+            {
+                proc.Dispose();
+            }
         }
+
+        return results;
     }
 
     // =================================================================
     //  Icon extraction
     // =================================================================
 
-    /// <summary>
-    /// Извлекает иконку из .exe через System.Drawing.Icon.ExtractAssociatedIcon
-    /// и конвертирует в ImageSource для WPF binding.
-    /// </summary>
     public static ImageSource? ExtractIcon(string exePath)
     {
         try
@@ -286,7 +257,7 @@ public static class InstalledAppsScanner
             var bmp = Imaging.CreateBitmapSourceFromHIcon(
                 icon.Handle, System.Windows.Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());
-            bmp.Freeze();  // делаем cross-thread safe
+            bmp.Freeze();
             return bmp;
         }
         catch
