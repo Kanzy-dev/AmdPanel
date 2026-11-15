@@ -7,7 +7,7 @@ namespace AmdPanel.Core.Hardware.Native;
 /// Структуры расположены в том же порядке, что и в bridge.h - любое
 /// изменение в bridge.h должно зеркально отражаться здесь.
 /// </summary>
-internal static class AdlxBridgeNative
+public static class AdlxBridgeNative
 {
     private const string DllName = "AmdPanel.NativeBridge.dll";
     private const CallingConvention Cc = CallingConvention.Cdecl;

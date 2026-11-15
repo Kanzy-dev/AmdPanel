@@ -774,6 +774,41 @@ extern "C" BRIDGE_API int32_t BRIDGE_CALL ADLXBridge_GetDisplayInfo(int32_t disp
         if (ADLX_OK == gpuScaling->IsEnabled(&b))   outInfo->gpuScalingEnabled   = b ? 1 : 0;
     }
 
+    //--- v1.1.0: Custom Color (Brightness / Contrast / Saturation / Hue) ---
+    // IADLXDisplayCustomColor НЕ имеет общего IsSupported - подтверждено сверкой
+    // с IDisplaySettings.h (строка 1155). Используем IsBrightnessSupported как
+    // базовый индикатор поддержки CustomColor, и затем условно читаем
+    // Contrast/Saturation/Hue только если соответствующие Is*Supported вернули true.
+    IADLXDisplayCustomColorPtr customColor;
+    if (ADLX_OK == dispSvc->GetCustomColor(disp.GetPtr(), &customColor) && customColor)
+    {
+        adlx_bool bBrightSup = false;
+        if (ADLX_OK == customColor->IsBrightnessSupported(&bBrightSup) && bBrightSup)
+        {
+            outInfo->customColorSupported = 1;
+            adlx_int v = 0;
+            if (ADLX_OK == customColor->GetBrightness(&v))
+                outInfo->customColorBrightness = (int32_t)v;
+
+            adlx_bool bSup = false;
+            if (ADLX_OK == customColor->IsContrastSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetContrast(&v))
+                    outInfo->customColorContrast = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsSaturationSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetSaturation(&v))
+                    outInfo->customColorSaturation = (int32_t)v;
+            }
+            if (ADLX_OK == customColor->IsHueSupported(&bSup) && bSup)
+            {
+                if (ADLX_OK == customColor->GetHue(&v))
+                    outInfo->customColorHue = (int32_t)v;
+            }
+        }
+    }
+
     //--- Scaling mode ---
     IADLXDisplayScalingModePtr scalingMode;
     if (ADLX_OK == dispSvc->GetScalingMode(disp.GetPtr(), &scalingMode) && scalingMode)

@@ -119,6 +119,13 @@ public struct BridgeDisplayInfo
     public int FreeSyncMaxHz;
     public int GpuScalingSupported;
     public int GpuScalingEnabled;
+
+    // v1.1.0: Custom Color (из IADLXDisplayCustomColor)
+    public int CustomColorSupported;
+    public int CustomColorBrightness;
+    public int CustomColorContrast;
+    public int CustomColorSaturation;
+    public int CustomColorHue;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]

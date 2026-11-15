@@ -145,6 +145,14 @@ struct BridgeDisplayInfo
     int32_t     freeSyncMaxHz;
     int32_t     gpuScalingSupported;
     int32_t     gpuScalingEnabled;
+
+    // === v1.1.0: Custom Color (IADLXDisplayCustomColor) ===
+    // -1 = не поддерживается / не удалось прочитать.
+    int32_t     customColorSupported;
+    int32_t     customColorBrightness;
+    int32_t     customColorContrast;
+    int32_t     customColorSaturation;
+    int32_t     customColorHue;
 };
 
 //-------------------------------------------------------------------------

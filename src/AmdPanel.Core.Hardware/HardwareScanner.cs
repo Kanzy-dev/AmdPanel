@@ -180,6 +180,13 @@ public sealed class HardwareScanner
                 FreeSyncMaxHz      = raw.FreeSyncMaxHz,
                 GpuScalingSupported = raw.GpuScalingSupported == 1,
                 GpuScalingEnabled  = raw.GpuScalingEnabled == 1,
+
+                // v1.1.0: Custom Color
+                CustomColorSupported  = raw.CustomColorSupported == 1,
+                CustomColorBrightness = raw.CustomColorBrightness,
+                CustomColorContrast   = raw.CustomColorContrast,
+                CustomColorSaturation = raw.CustomColorSaturation,
+                CustomColorHue        = raw.CustomColorHue,
             };
             snapshot.Displays.Add(info);
         }

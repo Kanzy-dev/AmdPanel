@@ -140,7 +140,7 @@ public sealed class LanguageService
             if (File.Exists(SettingsFilePath))
             {
                 string bakPath = SettingsFilePath + ".bak";
-                File.Replace(tmpPath, SettingsFilePath, bakPath, checkPath: false);
+                File.Replace(tmpPath, SettingsFilePath, bakPath, ignoreMetadataErrors: false);
             }
             else
             {
