@@ -127,6 +127,11 @@ jobs:
         run: |
           $stage = "dist\AmdPanel-v${{ steps.rel.outputs.version }}-win-x64"
           $zip = "dist\${{ steps.rel.outputs.archive_name }}"
+          
+          # Create stage directory and copy published files
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "publish\win-x64\*" -Destination $stage -Force -Recurse
+          
           Compress-Archive -Path "$stage\*" -DestinationPath $zip -CompressionLevel Optimal
           Write-Host "Created: $zip"
           Get-Item $zip | Select-Object FullName,Length
