@@ -8,19 +8,19 @@
   <conv:CapabilityToEnabledConverter x:Key="Cap2Enabled"/>
   <conv:BandwidthWarningConverter x:Key="BwWarn2Vis"/>
 
-  <!-- ===== Цветовая палитра (классический NVIDIA Control Panel стиль) ===== -->
-  <Color x:Key="Color.WindowBackground">#F4F4F2</Color>
-  <Color x:Key="Color.HeaderBackground">#E8E6E0</Color>
+  <!-- ===== Цветовая палитра (минималистичный NVIDIA Control Panel стиль) ===== -->
+  <Color x:Key="Color.WindowBackground">#F8F8F8</Color>
+  <Color x:Key="Color.HeaderBackground">#F5F5F5</Color>
   <Color x:Key="Color.PanelBackground">#FFFFFF</Color>
   <Color x:Key="Color.TreeBackground">#FFFFFF</Color>
-  <Color x:Key="Color.TextPrimary">#1F1F1F</Color>
-  <Color x:Key="Color.TextSecondary">#5A5A5A</Color>
-  <Color x:Key="Color.Accent">#0B6B3A</Color>           <!-- AMD green -->
-  <Color x:Key="Color.AccentPressed">#074F2A</Color>
-  <Color x:Key="Color.Border">#C8C5BE</Color>
-  <Color x:Key="Color.ButtonBackground">#E1E0DC</Color>
-  <Color x:Key="Color.ButtonHover">#D2D0CB</Color>
-  <Color x:Key="Color.Warning">#B25B00</Color>
+  <Color x:Key="Color.TextPrimary">#2C2C2C</Color>
+  <Color x:Key="Color.TextSecondary">#666666</Color>
+  <Color x:Key="Color.Accent">#00A651</Color>           <!-- AMD green -->
+  <Color x:Key="Color.AccentPressed">#008A44</Color>
+  <Color x:Key="Color.Border">#E5E5E5</Color>
+  <Color x:Key="Color.ButtonBackground">#F5F5F5</Color>
+  <Color x:Key="Color.ButtonHover">#E8E8E8</Color>
+  <Color x:Key="Color.Warning">#E67E00</Color>
   <Color x:Key="Color.DisabledText">#999999</Color>
 
   <SolidColorBrush x:Key="Brush.WindowBackground" Color="{StaticResource Color.WindowBackground}"/>
@@ -42,7 +42,7 @@
   <FontFamily x:Key="Font.Default">Segoe UI, Tahoma, sans-serif</FontFamily>
   <FontFamily x:Key="Font.Header">Segoe UI Semibold, Segoe UI, Tahoma</FontFamily>
 
-  <!-- ===== Стиль окна ===== -->
+  <!-- ===== Стиль окна (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="Window.Main" TargetType="Window">
     <Setter Property="Background" Value="{StaticResource Brush.WindowBackground}"/>
     <Setter Property="FontFamily" Value="{StaticResource Font.Default}"/>
@@ -51,14 +51,17 @@
     <Setter Property="UseLayoutRounding" Value="True"/>
     <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
     <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+    <Setter Property="ResizeMode" Value="CanResizeWithGrip"/>
+    <Setter Property="WindowStyle" Value="SingleBorderWindow"/>
   </Style>
 
-  <!-- ===== Шапка ===== -->
+  <!-- ===== Шапка (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="Header.Panel" TargetType="Border">
     <Setter Property="Background" Value="{StaticResource Brush.HeaderBackground}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
-    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-    <Setter Property="Padding" Value="12,8"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="16,12"/>
+    <Setter Property="Margin" Value="0"/>
   </Style>
   <Style x:Key="Header.Label" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Font.Header}"/>
@@ -73,19 +76,22 @@
     <Setter Property="VerticalAlignment" Value="Center"/>
   </Style>
 
-  <!-- ===== TreeView (классический вид) ===== -->
+  <!-- ===== TreeView (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="Nav.Tree" TargetType="TreeView">
     <Setter Property="Background" Value="{StaticResource Brush.TreeBackground}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
-    <Setter Property="BorderThickness" Value="0,0,1,0"/>
-    <Setter Property="Padding" Value="4"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
     <Setter Property="FontSize" Value="13"/>
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
   </Style>
   <Style x:Key="Nav.TreeItem" TargetType="TreeViewItem">
-    <Setter Property="Padding" Value="2,3"/>
+    <Setter Property="Padding" Value="8,6"/>
     <Setter Property="FontSize" Value="13"/>
     <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
     <Setter Property="IsExpanded" Value="True"/>
+    <Setter Property="Margin" Value="0,1"/>
   </Style>
   <Style x:Key="Nav.GroupLabel" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource Font.Header}"/>
@@ -101,15 +107,15 @@
     <Setter Property="Padding" Value="0,2"/>
   </Style>
 
-  <!-- ===== Кнопки ===== -->
+  <!-- ===== Кнопки (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="Button.Standard" TargetType="Button">
     <Setter Property="FontFamily" Value="{StaticResource Font.Default}"/>
     <Setter Property="FontSize" Value="13"/>
-    <Setter Property="Padding" Value="14,5"/>
+    <Setter Property="Padding" Value="16,6"/>
     <Setter Property="MinWidth" Value="80"/>
-    <Setter Property="Background" Value="{StaticResource Brush.ButtonBackground}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
-    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template">
@@ -118,17 +124,22 @@
           <Border Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="2"
                   Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter Property="Background" Value="{StaticResource Brush.ButtonHover}"/>
+              <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
+              <Setter Property="BorderThickness" Value="1"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter Property="Background" Value="#F0F0F0"/>
+              <Setter Property="BorderThickness" Value="1"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
               <Setter Property="Foreground" Value="{StaticResource Brush.DisabledText}"/>
-              <Setter Property="Opacity" Value="0.6"/>
+              <Setter Property="Opacity" Value="0.5"/>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -140,9 +151,14 @@
     <Setter Property="Background" Value="{StaticResource Brush.Accent}"/>
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="20,8"/>
     <Style.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter Property="Background" Value="{StaticResource Brush.AccentPressed}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="#008A44"/>
       </Trigger>
     </Style.Triggers>
   </Style>
@@ -214,12 +230,13 @@
     <Setter Property="Margin" Value="0,8,0,0"/>
   </Style>
 
-  <!-- ===== Строка статуса ===== -->
+  <!-- ===== Строка статуса (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="StatusBar.Panel" TargetType="Border">
-    <Setter Property="Background" Value="{StaticResource Brush.HeaderBackground}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
-    <Setter Property="BorderThickness" Value="0,1,0,0"/>
-    <Setter Property="Padding" Value="12,4"/>
+    <Setter Property="Background" Value="#F8F8F8"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="16,6"/>
+    <Setter Property="Margin" Value="0"/>
   </Style>
   <Style x:Key="StatusBar.Text" TargetType="TextBlock">
     <Setter Property="FontSize" Value="12"/>
@@ -227,12 +244,45 @@
     <Setter Property="VerticalAlignment" Value="Center"/>
   </Style>
 
-  <!-- ===== ComboBox в шапке ===== -->
+  <!-- ===== ComboBox в шапке (минималистичный NVIDIA стиль) ===== -->
   <Style x:Key="Combo.Selector" TargetType="ComboBox">
-    <Setter Property="MinWidth" Value="260"/>
-    <Setter Property="Padding" Value="6,3"/>
+    <Setter Property="MinWidth" Value="200"/>
+    <Setter Property="Padding" Value="8,4"/>
     <Setter Property="FontSize" Value="13"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Background" Value="#FFFFFF"/>
+    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" 
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="0"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Left" 
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+            </Border>
+            <Path Grid.Column="1" 
+                  Data="M0,0 L1,0.5 L0,1 z"
+                  Fill="{StaticResource Brush.TextSecondary}"
+                  Margin="4,0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 
 </ResourceDictionary>

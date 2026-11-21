@@ -20,7 +20,7 @@ public sealed class ContextMenuService : IDisposable
     public ContextMenuService(IAppConfigService configService)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
-        _appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AmdPanel.exe");
+        _appPath = System.Environment.ProcessPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AmdPanel.exe");
     }
 
     /// <summary>
@@ -68,10 +68,11 @@ public sealed class ContextMenuService : IDisposable
                 key.SetValue("Icon", $"{_appPath},0");
             }
 
-            // Ключ с командой запуска
+            // Ключ с командой запуска с правильным экранированием
             using (var key = Registry.CurrentUser.CreateSubKey(CommandKeyPath))
             {
-                key.SetValue(null, $"\"{_appPath}\"");
+                // Используем CommandLineArtifact для корректного экранирования
+                key.SetValue(null, $"\"{_appPath}\" --desktop-context");
             }
 
             // Требуется уведомление Explorer о изменении контекстного меню

@@ -66,16 +66,42 @@ public partial class MainWindow : Window
     /// <summary> Открывает модальное окно "О программе" с версией 1.0.0. </summary>
     private void OnAboutClick(object sender, RoutedEventArgs e)
     {
-        UiHardwareHub? hub = null;
-        if (Application.Current is App app)
+        try
         {
-            // Пробуем получить hub через reflection-приватное поле; в простейшем
-            // случае просто передаём null - AboutDialog покажет только версию сборки.
-            var hubField = app.GetType().GetField("_hub",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            hub = hubField?.GetValue(app) as UiHardwareHub;
+            UiHardwareHub? hub = null;
+            AppUpdateService? updateService = null;
+            
+            if (Application.Current is App app)
+            {
+                // Пробуем получить hub через reflection-приватное поле; в простейшем
+                // случае просто передаём null - AboutDialog покажет только версию сборки.
+                var hubField = app.GetType().GetField("_hub",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                hub = hubField?.GetValue(app) as UiHardwareHub;
+                
+                // Получаем сервис обновлений
+                var updateServiceField = app.GetType().GetField("_updateService",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                updateService = updateServiceField?.GetValue(app) as AppUpdateService;
+            }
+            
+            var dlg = new Views.AboutDialog(hub, updateService) { Owner = this };
+            dlg.ShowDialog();
         }
-        var dlg = new Views.AboutDialog(hub) { Owner = this };
-        dlg.ShowDialog();
+        catch (Exception ex)
+        {
+            // Фоллбэк: если что-то пошло не так, показываем AboutDialog без зависимостей
+            try
+            {
+                var dlg = new Views.AboutDialog(null) { Owner = this };
+                dlg.ShowDialog();
+            }
+            catch
+            {
+                // Последний fallback: просто показываем сообщение
+                MessageBox.Show("AmdPanel v1.0.0\n\nLightweight native control panel for AMD GPUs",
+                    "About AmdPanel", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }
